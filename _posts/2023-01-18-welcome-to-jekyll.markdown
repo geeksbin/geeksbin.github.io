@@ -22,6 +22,26 @@ print_hi('Tom')
 #=> prints 'Hi, Tom' to STDOUT.
 {% endhighlight %}
 
+
+	1. Enable Journal Log 
+		a. adb shell mount -o remount,rw /
+		b. adb shell systemctl unmask systemd-journald
+		c. adb shell systemctl unmask systemd-journal-flush
+		d. adb shell systemctl unmask systemd-journal-catalog-update
+		e. adb shell reboot -f 
+	2. Example
+		a. journalctl -ef -u pulseaudio.service --no-pager
+		b. journalctl -ef -u allplay.service --no-pager
+		c. journalctl -ef -u button-manager --no-pager
+		d. journalctl -ef -u connectivity-manager.service --no-pager
+		e. journalctl --no-p -fu pulseaudio | grep "Channel matrix:" -A 10 -B 20
+		f. Show all kernel logs from previous boot:
+journalctl -k -b -1
+
+한글이 제대로 나오는지도 굉장히 중요한 문제입니다.
+
+
+
 Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
 
 [jekyll-docs]: https://jekyllrb.com/docs/home
