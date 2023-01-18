@@ -23,20 +23,21 @@ print_hi('Tom')
 {% endhighlight %}
 
 
-	1. Enable Journal Log 
-		a. adb shell mount -o remount,rw /
-		b. adb shell systemctl unmask systemd-journald
-		c. adb shell systemctl unmask systemd-journal-flush
-		d. adb shell systemctl unmask systemd-journal-catalog-update
-		e. adb shell reboot -f 
-	2. Example
-		a. journalctl -ef -u pulseaudio.service --no-pager
-		b. journalctl -ef -u allplay.service --no-pager
-		c. journalctl -ef -u button-manager --no-pager
-		d. journalctl -ef -u connectivity-manager.service --no-pager
-		e. journalctl --no-p -fu pulseaudio | grep "Channel matrix:" -A 10 -B 20
-		f. Show all kernel logs from previous boot:
-journalctl -k -b -1
+
+1. Enable Journal Log 
+	a. adb shell mount -o remount,rw /
+	b. adb shell systemctl unmask systemd-journald
+	c. adb shell systemctl unmask systemd-journal-flush
+	d. adb shell systemctl unmask systemd-journal-catalog-update
+	e. adb shell reboot -f 
+2. Example
+	a. journalctl -ef -u pulseaudio.service --no-pager
+	b. journalctl -ef -u allplay.service --no-pager
+	c. journalctl -ef -u button-manager --no-pager
+	d. journalctl -ef -u connectivity-manager.service --no-pager
+	e. journalctl --no-p -fu pulseaudio | grep "Channel matrix:" -A 10 -B 20
+	f. Show all kernel logs from previous boot:
+  g. journalctl -k -b -1
 
 한글이 제대로 나오는지도 굉장히 중요한 문제입니다.
 
