@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#7FD1C1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="바 트레이너">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>레시피 바 트레이너</title>
+<style>
+@font-face{font-family:"Jua";src:url("Jua-Regular.ttf") format("truetype");font-display:swap}
+html{-webkit-tap-highlight-color:transparent}
+body{-webkit-user-select:none;user-select:none;padding-top:max(14px,env(safe-area-inset-top,0px))}
+/* Layout: sticker-cartoon cafe — scene (customer + speech-bubble order) → cup that fills layer by layer → ingredient sticker shelf.
+   Deliberately single-theme: one bright cartoon world with explicit colors on every surface. */
+:root{
+  color-scheme:light;
+  --ink:#1F1A2E; --ink-soft:#4B4560;
+  --page:#7FD1C1; --dots:#6BC2B1;
+  --panel:#FFFCF4; --panel-2:#FFF3D9;
+  --wall:#CDEFF7; --counter:#F2A65A; --counter-dark:#D9853A;
+  --accent:#FF6A4D; --accent-2:#FFC93C; --blue:#5B8CFF; --pink:#FF8FB8;
+  --ok:#21A366; --mid:#F29D12; --bad:#E5484D;
+  --f-display:"Jua","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  --line:3px solid var(--ink);
+  --pop:4px 4px 0 var(--ink);
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;color:var(--ink);font-family:var(--f-body);font-weight:500;font-size:15px;line-height:1.45;
+  background-color:var(--page);background-image:radial-gradient(var(--dots) 2.2px,transparent 2.6px);background-size:18px 18px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px 36px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible{outline:3px dashed var(--blue);outline-offset:3px}
+.pop{background:var(--panel);border:var(--line);border-radius:18px;box-shadow:var(--pop)}
+.press{transition:transform .08s,box-shadow .08s}
+.press:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.logo{font-family:var(--f-display);font-size:30px;line-height:1;color:var(--panel);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink);letter-spacing:.01em}
+.logo span{color:var(--accent-2)}
+.top-actions{display:flex;gap:8px}
+.chipbtn{background:var(--panel);border:var(--line);border-radius:999px;padding:6px 12px;font-family:var(--f-display);font-size:15px;box-shadow:3px 3px 0 var(--ink)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:var(--panel);border:var(--line);border-radius:14px;padding:3px;gap:3px;box-shadow:3px 3px 0 var(--ink)}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:10px;font-family:var(--f-display);font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+select{font-family:var(--f-display);font-size:15px;padding:7px 10px;border:var(--line);border-radius:14px;background:var(--panel);color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.hud{display:flex;gap:8px;margin-left:auto}
+.badge{background:var(--accent-2);border:var(--line);border-radius:12px;padding:3px 10px;font-family:var(--f-display);font-size:15px;box-shadow:3px 3px 0 var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.badge.t{background:var(--pink)}
+.badge.t.low{background:var(--bad);color:#fff;animation:pulse .6s infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+
+/* scene */
+.scene{position:relative;overflow:hidden;padding:0;background:var(--wall)}
+.scene-inner{display:grid;grid-template-columns:128px minmax(0,1fr);align-items:end;gap:6px;padding:14px 14px 0;min-height:168px;position:relative;z-index:1}
+.shelf{position:absolute;left:0;right:0;top:34px;height:10px;background:var(--counter-dark);border-block:var(--line);opacity:.55}
+.window{position:absolute;right:16px;top:-3px;width:70px;height:28px;border:var(--line);border-top:0;border-radius:0 0 10px 10px;background:#fff;opacity:.6}
+.counter{height:22px;background:var(--counter);border-top:var(--line);position:relative;z-index:2;background-image:repeating-linear-gradient(90deg,transparent 0 46px,var(--counter-dark) 46px 49px)}
+.cust{width:128px;height:140px;align-self:end;margin-bottom:-6px}
+.cust.in{animation:hop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{from{transform:translateX(-120%) rotate(-12deg)}to{transform:none}}
+.cust.happy{animation:jump .5s ease-out 2}
+@keyframes jump{50%{transform:translateY(-14px)}}
+.cust.mad{animation:shake .35s 2}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bubble{position:relative;align-self:center;margin-bottom:26px;background:#fff;border:var(--line);border-radius:20px;padding:10px 14px 12px;box-shadow:var(--pop);min-width:0}
+.bubble::before{content:"";position:absolute;left:-16px;bottom:18px;border:10px solid transparent;border-right:16px solid var(--ink)}
+.bubble::after{content:"";position:absolute;left:-9px;bottom:21px;border:7px solid transparent;border-right:11px solid #fff}
+.b-no{font-size:11.5px;color:var(--ink-soft);font-weight:700;letter-spacing:.04em}
+.b-name{font-family:var(--f-display);font-size:27px;line-height:1.1;text-wrap:balance;word-break:keep-all}
+.b-row{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.tag{font-family:var(--f-display);font-size:14px;padding:1px 9px;border:2.5px solid var(--ink);border-radius:999px}
+.tag.ICE{background:#9FE3FF}.tag.HOT{background:#FF9E7A}
+.b-meta{font-size:12px;color:var(--ink-soft);font-weight:700}
+.patience{position:absolute;left:14px;right:14px;top:10px;height:10px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;z-index:3;overflow:hidden}
+.patience i{display:block;height:100%;background:var(--ok);transition:width 1s linear,background .3s}
+
+/* bar (cup + steps) */
+.bar{padding:12px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:start;background:var(--panel)}
+.cupwrap{position:relative}
+.cupwrap svg{width:150px;height:auto;display:block;overflow:visible}
+.newlayer{transform-box:fill-box;transform-origin:50% 100%;animation:pour .45s cubic-bezier(.3,1.4,.5,1)}
+@keyframes pour{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.drop{animation:drop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes drop{from{transform:translateY(-120px)}to{transform:none}}
+.steam path{animation:rise 2.4s ease-in-out infinite}
+.steam path:nth-child(2){animation-delay:.8s}.steam path:nth-child(3){animation-delay:1.6s}
+@keyframes rise{0%{opacity:0;transform:translateY(8px)}40%{opacity:.9}100%{opacity:0;transform:translateY(-14px)}}
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.side-title{font-family:var(--f-display);font-size:16px;display:flex;justify-content:space-between}
+.side-title span{color:var(--ink-soft);font-size:14px}
+.steps{display:flex;flex-direction:column;gap:5px;counter-reset:s;max-height:208px;overflow:auto;padding-right:2px}
+.empty{color:var(--ink-soft);font-size:13px;background:var(--panel-2);border:2px dashed var(--ink-soft);border-radius:12px;padding:10px}
+.step{display:flex;align-items:center;gap:7px;border:2.5px solid var(--ink);background:#fff;border-radius:11px;padding:4px 4px 4px 6px;font-size:13.5px;font-weight:700;counter-increment:s;min-width:0}
+.step::before{content:counter(s);flex:none;width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;display:grid;place-items:center}
+.step i{width:12px;height:12px;border-radius:4px;border:2px solid var(--ink);flex:none}
+.step em{font-style:normal;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step button{border:0;background:transparent;font-size:18px;line-height:1;padding:0 4px;color:var(--ink-soft)}
+.step.last{animation:pop .3s}
+@keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:none}}
+.hint{font-size:13px;font-weight:700;background:var(--accent-2);border:2.5px solid var(--ink);border-radius:12px;padding:6px 10px}
+.actions{display:grid;grid-template-columns:auto auto 1fr;gap:8px;grid-column:1/-1}
+.btn{border:var(--line);background:#fff;border-radius:14px;padding:9px 14px;font-family:var(--f-display);font-size:17px;box-shadow:3px 3px 0 var(--ink)}
+.btn.go{background:var(--accent);color:#fff;font-size:20px}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+/* stations */
+.stations{overflow:hidden}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 10px 0;scrollbar-width:none;border-bottom:var(--line);background:var(--panel-2)}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:var(--line);border-bottom:0;border-radius:12px 12px 0 0;background:#fff;padding:6px 12px 5px;font-family:var(--f-display);font-size:15px;display:flex;gap:6px;align-items:center;margin-bottom:-3px;opacity:.75}
+.tab i{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink)}
+.tab[aria-selected="true"]{opacity:1;background:var(--panel);padding-bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;padding:14px 12px 16px}
+.ing{border:var(--line);background:#fff;border-radius:16px;padding:8px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:700;text-align:center;box-shadow:3px 3px 0 var(--ink);line-height:1.2;min-height:98px}
+.ing svg{width:46px;height:46px}
+.ing:hover svg{animation:wig .4s}
+@keyframes wig{30%{transform:rotate(-8deg)}70%{transform:rotate(8deg)}}
+
+/* sheets */
+.scrim{position:fixed;inset:0;background:rgba(31,26,46,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--panel);border:var(--line);border-bottom:0;width:100%;max-width:560px;max-height:88vh;overflow:auto;border-radius:24px 24px 0 0;
+  padding:18px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));animation:up .25s cubic-bezier(.3,1.3,.5,1)}
+@keyframes up{from{transform:translateY(60px)}to{transform:none}}
+.sheet h2{font-family:var(--f-display);font-weight:400;font-size:26px;margin:0 0 2px;display:flex;align-items:center;gap:10px}
+.sheet h2 svg{width:44px;height:44px}
+.sub{color:var(--ink-soft);font-size:13px;margin:0 0 12px}
+.amounts{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:9px}
+.amt{border:var(--line);background:#fff;border-radius:14px;padding:11px 4px;font-family:var(--f-display);font-size:21px;box-shadow:3px 3px 0 var(--ink);font-variant-numeric:tabular-nums}
+.amt:hover{background:var(--accent-2)}
+.amt.skip{font-size:14px;background:var(--panel-2)}
+.foot{display:flex;gap:8px;margin-top:16px}.foot .btn{flex:1}
+.stamp{display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.stamp b{font-family:var(--f-display);font-weight:400;font-size:30px;padding:4px 16px;border:4px solid currentColor;border-radius:14px;transform:rotate(-6deg);animation:stamp .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes stamp{from{transform:rotate(-6deg) scale(2.2);opacity:0}}
+.stamp.good{color:var(--ok)}.stamp.mid{color:var(--mid)}.stamp.bad{color:var(--bad)}
+.stamp span{font-family:var(--f-display);font-size:22px;color:var(--ink)}
+.rlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rlist li{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:center;padding:7px 10px;border-radius:12px;border:2.5px solid var(--ink);background:#fff;font-weight:700;font-size:14px}
+.rlist li .m{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:14px;border:2px solid var(--ink)}
+.rlist li.ok .m{background:var(--ok)}
+.rlist li.amt{background:#FFF1CF}.rlist li.amt .m{background:var(--mid)}
+.rlist li.miss{background:#FFE0DF}.rlist li.miss .m{background:var(--bad)}
+.rlist li.opt{opacity:.6}.rlist li.opt .m{background:var(--ink-soft)}
+.rlist small{display:block;font-weight:500;color:var(--ink-soft);font-size:12px}
+.rhead{font-family:var(--f-display);font-size:16px;margin:14px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;font-weight:700;padding:3px 9px;border:2px solid var(--ink);border-radius:999px;background:#FFE0DF}
+.chip.n{background:#fff}
+.note{font-size:13px;font-weight:700;background:var(--accent-2);border:2.5px solid var(--ink);border-radius:12px;padding:8px 10px;margin-top:12px}
+.book h3{font-family:var(--f-display);font-weight:400;font-size:20px;margin:16px 0 6px}
+.brow{padding:8px 10px;border:2.5px solid var(--ink);border-radius:12px;background:#fff;margin-bottom:6px}
+.brow .nm{font-family:var(--f-display);font-size:17px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.brow .rc{font-size:13px;color:var(--ink-soft)}
+.pips{display:inline-flex;gap:3px}.pips i{width:10px;height:10px;border-radius:3px;border:2px solid var(--ink);background:#fff}.pips i.on{background:var(--ok)}
+.meter{height:14px;border:2.5px solid var(--ink);border-radius:8px;background:#fff;overflow:hidden;margin-top:4px}.meter i{display:block;height:100%;background:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.stat{background:#fff;border:2.5px solid var(--ink);border-radius:14px;padding:8px 10px;box-shadow:3px 3px 0 var(--ink)}
+.stat b{display:block;font-family:var(--f-display);font-weight:400;font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--ink-soft);font-weight:700}
+.fine{font-size:12px;color:var(--ink);text-align:center;opacity:.75}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti i{position:absolute;top:-20px;width:10px;height:14px;border:2px solid var(--ink);border-radius:3px;animation:fall 1.4s cubic-bezier(.2,.6,.4,1) forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+@media (max-width:420px){
+  .bar{grid-template-columns:120px minmax(0,1fr)}.cupwrap svg{width:120px}
+  .scene-inner{grid-template-columns:100px minmax(0,1fr)}.cust{width:100px;height:112px}
+  .b-name{font-size:23px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo">레시피 <span>바</span> 트레이너</div>
+    <div class="top-actions">
+      <button class="chipbtn press" id="bookBtn" type="button">레시피북</button>
+      <button class="chipbtn press" id="statsBtn" type="button">오답노트</button>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="모드">
+      <button type="button" id="modePractice" aria-pressed="true">연습</button>
+      <button type="button" id="modeRush" aria-pressed="false">러시아워</button>
+    </div>
+    <select id="stage" aria-label="스테이지"></select>
+    <div class="hud" id="hud"></div>
+  </div>
+
+  <section class="pop scene" aria-live="polite">
+    <div class="shelf"></div><div class="window"></div>
+    <div class="patience" id="patience" hidden><i></i></div>
+    <div class="scene-inner">
+      <div id="cust"></div>
+      <div class="bubble" id="bubble"></div>
+    </div>
+    <div class="counter"></div>
+  </section>
+
+  <section class="pop bar" aria-label="내 컵">
+    <div class="cupwrap" id="cup"></div>
+    <div class="side">
+      <div class="side-title">담은 순서 <span id="cupCount"></span></div>
+      <div class="steps" id="steps"></div>
+      <div class="hint" id="hintLine" hidden></div>
+    </div>
+    <div class="actions">
+      <button class="btn press" id="undoBtn" type="button">되돌리기</button>
+      <button class="btn press" id="hintBtn" type="button">힌트</button>
+      <button class="btn go press" id="doneBtn" type="button">제조 완료!</button>
+    </div>
+  </section>
+
+  <section class="pop stations" aria-label="재료 스테이션">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <p class="fine">기록은 이 기기에만 저장됩니다 · 레시피 출처: 컴포즈커피 레시피 정리 1~3장</p>
+</div>
+<div id="layer"></div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ---------- data ---------- */
+const GROUPS=[
+ {id:'syrup',n:'시럽',c:'#FFC93C'},{id:'sauce',n:'소스·베이스',c:'#B5743F'},{id:'liquid',n:'우유·물',c:'#7FC8FF'},
+ {id:'shot',n:'샷',c:'#5A2E17'},{id:'ice',n:'얼음·동작',c:'#9FE3FF'},{id:'top',n:'토핑',c:'#FF8FB8'}];
+// k = icon kind, c = color in cup
+const ING={
+ van:{n:'바닐라시럽',g:'syrup',u:'P',k:'pump',c:'#F6E3A8'},haz:{n:'헤이즐넛시럽',g:'syrup',u:'P',k:'pump',c:'#C9935F'},
+ sug:{n:'설탕시럽',g:'syrup',u:'P',k:'pump',c:'#F3F0E6'},lowsug:{n:'저당시럽',g:'syrup',u:'P',k:'pump',c:'#DDEFC8'},
+ vanConc:{n:'바닐라시럽(고농축)',g:'syrup',u:'g',k:'pump',c:'#F2CF6E'},
+ choco:{n:'초코소스',g:'sauce',u:'g',k:'squeeze',c:'#5A2F1E'},caramelS:{n:'카라멜소스',g:'sauce',u:'g',k:'squeeze',c:'#C9772C'},
+ caramelB:{n:'카라멜베이스',g:'sauce',u:'g',k:'jar',c:'#DDA466'},dolceB:{n:'돌체베이스',g:'sauce',u:'g',k:'jar',c:'#EBCB9F'},
+ condensed:{n:'연유',g:'sauce',u:'g',k:'squeeze',c:'#F7EACB'},brownS:{n:'흑당소스',g:'sauce',u:'g',k:'squeeze',c:'#4A2614',d:'컵에 둘러 묻히기'},
+ brownSugar:{n:'흑당',g:'sauce',u:'g',k:'jar',c:'#6E3A1D'},honey:{n:'꿀',g:'sauce',u:'g',k:'honey',c:'#F4B225'},
+ nuttyB:{n:'너티베이스',g:'sauce',u:'g',k:'jar',c:'#D3B28A'},pineB:{n:'파인애플베이스',g:'sauce',u:'g',k:'jar',c:'#F7D84E'},
+ mixB:{n:'믹스커피베이스',g:'sauce',u:'g',k:'jar',c:'#C49466'},peachB:{n:'복숭아티베이스',g:'sauce',u:'g',k:'jar',c:'#F7A27C'},
+ vanPowder:{n:'바닐라파우더',g:'sauce',u:'g',k:'powder',c:'#F6E9C2'},
+ milk:{n:'우유',g:'liquid',u:'ml',k:'carton',c:'#FFFFFF'},steam:{n:'스팀우유',g:'liquid',u:'ml',k:'pitcher',c:'#FBF5EA'},
+ oat:{n:'오트우유',g:'liquid',u:'ml',k:'carton',c:'#EEDDBB'},water:{n:'물',g:'liquid',u:'ml',k:'drop',c:'#BFE6FA'},
+ hot:{n:'온수',g:'liquid',u:'ml',k:'kettle',c:'#CBEAF8'},purified:{n:'정수',g:'liquid',u:'ml',k:'drop',c:'#C6E8F9'},
+ s1_30:{n:'1샷(30)',g:'shot',k:'shot',c:'#4B2312',v:30},s2_45:{n:'2샷(45)',g:'shot',k:'shot2',c:'#4B2312',v:45},
+ s2_60:{n:'2샷(60)',g:'shot',k:'shot2',c:'#4B2312',v:60},s4_45:{n:'4샷(45×2)',g:'shot',k:'shot4',c:'#4B2312',v:90},
+ s4_60:{n:'4샷(60×2)',g:'shot',k:'shot4',c:'#4B2312',v:120},decaf:{n:'디카페인 2샷(45)',g:'shot',k:'shot2',c:'#6A3B22',v:45},
+ ice:{n:'얼음',g:'ice',k:'ice',n2:6},ice9:{n:'얼음 9부',g:'ice',k:'ice',n2:9},iceFull:{n:'얼음 가득(피처)',g:'ice',k:'ice',n2:11},
+ mix:{n:'믹스',g:'ice',k:'spoon'},whisk:{n:'휘핑기로 섞기',g:'ice',k:'whisk'},steamAct:{n:'스팀',g:'ice',k:'steamer'},
+ chocoLine:{n:'초코소스 1바퀴',g:'ice',k:'squeeze',c:'#5A2F1E'},
+ whip:{n:'휘핑',g:'top',k:'cream',c:'#FFFFFF'},chocoDr:{n:'초코드리즐',g:'top',k:'drizzle',c:'#5A2F1E'},
+ caraDr:{n:'카라멜드리즐',g:'top',k:'drizzle',c:'#C9772C'},chocoPw:{n:'초코파우더',g:'top',k:'powder',c:'#6B3B22'},
+ cinnamon:{n:'시나몬파우더',g:'top',k:'powder',c:'#9C5A2C'},einCream:{n:'아인슈페너 크림',g:'top',k:'cream',c:'#FFF8EC'},
+ vanCream:{n:'바닐라크림',g:'top',u:'g',k:'cream',c:'#FFF1C9'},nuttyCream:{n:'너티크림베이스',g:'top',u:'g',k:'cream',c:'#EED8BC'},
+ icecream:{n:'아이스크림',g:'top',u:'g',k:'scoop',c:'#FFF6E0'},dalgona:{n:'달고나',g:'top',u:'g',k:'dalgona',c:'#E09B2D'},
+ pearl:{n:'펄',g:'top',u:'g',k:'pearl',c:'#2A1A12'},mango:{n:'냉동망고다이스',g:'top',u:'g',k:'cube',c:'#FFC23D',opts:['50','80~100']}
+};
+const UNIT_OPTS={P:[0.5,1,1.5,2,3,4,5],ml:[100,150,200,250,270,280,300,350],g:[5,10,30,40,50,60,80,100,115,200,280,300,430,450]};
+const CHAPTERS={1:'1장 에스프레소 커피',2:'2장 흑당·크림·스페셜',3:'3장 빅포즈'};
+const RECIPES=[];
+function R(name,temp,ch,steps,note){RECIPES.push({key:name+'|'+temp,name,temp,ch,note:note||'',
+  steps:steps.map(s=>({i:s[0],a:s[1]===undefined?null:s[1],opt:!!s[2]}))})}
+R('아메리카노','ICE',1,[['water',200],['ice'],['s2_45']]);
+R('아메리카노','HOT',1,[['hot',350],['s2_60']]);
+R('카페라떼','ICE',1,[['milk',200],['ice'],['s2_60']]);
+R('카페라떼','HOT',1,[['s2_60'],['steam',270]]);
+R('카푸치노','HOT',1,[['s2_60'],['cinnamon',null,1],['steam',250]],'시나몬파우더는 고객 선택. 거품 많이!');
+R('바닐라라떼','ICE',1,[['van',2],['sug',1],['milk',200],['ice'],['s2_60']],'우유는 200선까지');
+R('바닐라라떼','HOT',1,[['van',2],['sug',1],['s2_60'],['steam',250]]);
+R('헤이즐넛라떼','ICE',1,[['haz',2],['sug',1],['milk',200],['ice'],['s2_60']],'우유는 200선까지');
+R('헤이즐넛라떼','HOT',1,[['haz',2],['sug',1],['s2_60'],['steam',250]]);
+R('카페모카','ICE',1,[['choco',30],['sug',2],['s2_60'],['mix'],['ice'],['milk'],['whip'],['chocoDr'],['chocoPw']],'우유는 양 표기 없음');
+R('카페모카','HOT',1,[['choco',30],['sug',2],['s2_60'],['mix'],['steam',250],['whip'],['chocoDr'],['chocoPw']]);
+R('카라멜마끼아또','ICE',1,[['caramelB',200],['ice'],['s2_60'],['caraDr']]);
+R('카라멜마끼아또','HOT',1,[['caramelS',30],['sug',2],['steam',250],['mix'],['s2_60'],['caraDr']]);
+R('돌체라떼','ICE',1,[['dolceB',200],['ice'],['s2_60']]);
+R('돌체라떼','HOT',1,[['condensed',50],['steam',250],['mix'],['s2_60']]);
+R('꿀아메리카노','ICE',1,[['honey',50],['s2_45'],['mix'],['purified',200],['ice']],'꿀 + 2샷은 계량컵에서 믹스한 뒤 붓기');
+R('꿀아메리카노','HOT',1,[['honey',60],['hot',350],['mix'],['s2_45']]);
+R('달고나라떼','ICE',1,[['brownSugar',10],['sug',1],['van',1],['milk',200],['mix'],['ice'],['dalgona',30],['s2_45']]);
+R('올데이오트','ICE',1,[['lowsug',2],['oat',200],['decaf']]);
+R('흑당라떼','ICE',2,[['brownS',50],['milk',250],['ice']],'흑당은 컵 벽에 둘러 묻히기');
+R('흑당카페라떼','ICE',2,[['brownS',50],['milk',200],['ice'],['s1_30']],'흑당은 컵 벽에 둘러 묻히기');
+R('흑당버블라떼','ICE',2,[['brownS',50],['pearl',40],['milk',250],['ice']],'흑당 둘러 묻히기 → 펄');
+R('흑당버블카페라떼','ICE',2,[['brownS',50],['pearl',40],['milk',200],['ice'],['s1_30']],'흑당 둘러 묻히기 → 펄');
+R('배러댄아인슈페너','ICE',2,[['s2_45'],['water',100],['van',0.5],['sug',1],['ice9'],['einCream'],['chocoPw']]);
+R('아인슈페너라떼','ICE',2,[['sug',1],['van',0.5],['milk',150],['s2_45'],['ice9'],['einCream'],['chocoPw']],'노트에는 "2샷"으로만 적혀 있어 2샷(45)로 넣었습니다');
+R('바닐라크림라떼','ICE',2,[['vanConc',5],['vanPowder',10],['s1_30'],['whisk'],['milk',100],['chocoLine'],['ice'],['vanCream',50],['chocoPw']],'14온스. 초코파우더는 가운데 톡톡');
+R('너티크림라떼','ICE',2,[['nuttyB',115],['ice'],['s1_30'],['nuttyCream',50],['chocoPw']],'14온스. 초코파우더는 가운데 톡톡');
+R('아이스크림라떼','ICE',2,[['milk',100],['ice'],['s2_45'],['icecream',100]],'16온스 컵');
+R('에어리아메리카노','ICE',2,[['iceFull'],['s2_45'],['steamAct']],'스팀 중간중간 얼음 2번 정도 넣기. 넘치기 직전까지, 거품 많이');
+R('파인애플커피','ICE',2,[['pineB',280],['ice'],['s1_30']]);
+R('믹스커피','ICE',2,[['mixB',280],['ice']]);
+R('빅포즈 아메리카노','ICE',3,[['water',300],['ice'],['s4_45']]);
+R('빅포즈 카페라떼','ICE',3,[['milk',300],['ice'],['s4_60']]);
+R('빅포즈 바닐라라떼','ICE',3,[['van',4],['sug',2],['milk',250],['ice'],['s4_60']]);
+R('빅포즈 헤이즐넛라떼','ICE',3,[['haz',4],['sug',2],['milk',250],['ice'],['s4_60']]);
+R('빅포즈 파인애플커피','ICE',3,[['pineB',430],['ice'],['s2_45']]);
+R('빅포즈 아이스티','ICE',3,[['peachB',450],['ice']]);
+R('빅포즈 아망추','ICE',3,[['peachB',450],['ice'],['mango','80~100']]);
+R('빅포즈 아샷추','ICE',3,[['peachB',450],['ice'],['s2_45']]);
+
+/* ---------- icons (sticker style) ---------- */
+const O='stroke="#1F1A2E" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
+function icon(id){
+  const g=ING[id],c=g.c||'#fff',k=g.k;
+  const W=(b)=>`<svg viewBox="0 0 48 48" aria-hidden="true">${b}</svg>`;
+  switch(k){
+   case 'pump':return W(`<rect x="13" y="18" width="22" height="26" rx="6" fill="${c}" ${O}/><path d="M20 18v-6h8v6M28 12h8v4" fill="none" ${O}/><rect x="17" y="27" width="14" height="9" rx="2" fill="#fff" ${O}/>`);
+   case 'squeeze':return W(`<path d="M15 16h18l-2 28H17z" fill="${c}" ${O}/><path d="M20 16l2-8h4l2 8" fill="#fff" ${O}/><path d="M24 8V4" ${O}/>`);
+   case 'jar':return W(`<rect x="11" y="16" width="26" height="28" rx="7" fill="${c}" ${O}/><rect x="13" y="9" width="22" height="8" rx="3" fill="#FF6A4D" ${O}/><path d="M17 27h14" ${O}/>`);
+   case 'honey':return W(`<path d="M12 20c0-6 24-6 24 0v18c0 6-24 6-24 0z" fill="${c}" ${O}/><path d="M16 13h16v7H16z" fill="#fff" ${O}/><path d="M18 30h12" ${O}/>`);
+   case 'powder':return W(`<path d="M14 18h20v24a3 3 0 0 1-3 3H17a3 3 0 0 1-3-3z" fill="${c}" ${O}/><rect x="13" y="11" width="22" height="8" rx="3" fill="#fff" ${O}/><circle cx="19" cy="15" r="1.4" fill="#1F1A2E"/><circle cx="24" cy="15" r="1.4" fill="#1F1A2E"/><circle cx="29" cy="15" r="1.4" fill="#1F1A2E"/>`);
+   case 'carton':return W(`<path d="M13 18l5-8h12l5 8v26H13z" fill="${c}" ${O}/><path d="M13 18h22M18 10l4 8" fill="none" ${O}/><path d="M17 28c3 3 11 3 14 0" fill="none" stroke="#5B8CFF" stroke-width="3" stroke-linecap="round"/>`);
+   case 'pitcher':return W(`<path d="M12 14h22l-2 30H14z" fill="${c}" ${O}/><path d="M34 18c6 0 6 12 0 12" fill="none" ${O}/><path d="M12 14l-4-3" ${O}/><path d="M17 24h12" stroke="#B5743F" stroke-width="3" stroke-linecap="round"/>`);
+   case 'drop':return W(`<path d="M24 6c8 11 12 17 12 24a12 12 0 0 1-24 0c0-7 4-13 12-24z" fill="${c}" ${O}/><path d="M18 30a6 6 0 0 0 6 6" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`);
+   case 'kettle':return W(`<path d="M10 22c0-8 26-8 26 0v16a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4z" fill="${c}" ${O}/><path d="M36 26l8-6" ${O}/><path d="M18 14c0-4 10-4 10 0" fill="none" ${O}/><path d="M17 4c-2 2 2 4 0 6M24 2c-2 2 2 4 0 6" fill="none" stroke="#FF6A4D" stroke-width="2.5" stroke-linecap="round"/>`);
+   case 'shot':case 'shot2':case 'shot4':{const n=k==='shot'?1:k==='shot2'?2:4;let s='';const xs=n===1?[24]:n===2?[16,32]:[12,20,28,36];
+     xs.forEach((x,i)=>{const y=n===4?(i%2?22:26):20;const w=n===4?8:11;s+=`<path d="M${x-w} ${y}h${2*w}l-2 ${n===4?16:20}h${-(2*w-4)}z" fill="#fff" ${O}/><path d="M${x-w+2} ${y+5}h${2*w-4}l-1.5 ${n===4?9:12}h${-(2*w-7)}z" fill="${c}"/>`});return W(s+`<ellipse cx="24" cy="44" rx="18" ry="2.5" fill="#1F1A2E" opacity=".2"/>`)}
+   case 'ice':return W(`<rect x="8" y="16" width="18" height="18" rx="4" fill="#DDF5FF" ${O} transform="rotate(-10 17 25)"/><rect x="22" y="22" width="18" height="18" rx="4" fill="#C3ECFF" ${O} transform="rotate(12 31 31)"/><path d="M13 21l4-1" stroke="#fff" stroke-width="3" stroke-linecap="round"/><path d="M38 8l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" fill="#FFC93C" ${O} stroke-width="2"/>`);
+   case 'spoon':return W(`<path d="M30 6l-10 26" ${O} stroke-width="5"/><path d="M30 6l-10 26" stroke="#E7E3EF" stroke-width="2" stroke-linecap="round"/><ellipse cx="18" cy="37" rx="7" ry="9" fill="#E7E3EF" ${O} transform="rotate(20 18 37)"/><path d="M34 26c4 2 6 6 4 10M8 14c-2 4 0 8 3 9" fill="none" stroke="#FF6A4D" stroke-width="2.5" stroke-linecap="round"/>`);
+   case 'whisk':return W(`<path d="M24 4v14" ${O} stroke-width="5"/><path d="M24 18c-12 6-10 26 0 26s12-20 0-26z M24 18c-5 6-5 26 0 26 M24 18c5 6 5 26 0 26" fill="#E7E3EF" ${O}/>`);
+   case 'steamer':return W(`<path d="M10 6h10v30h-10z" fill="#E7E3EF" ${O}/><path d="M15 36v6" ${O}/><path d="M26 30c-2-4 2-6 0-10M33 32c-2-4 2-6 0-10M40 30c-2-4 2-6 0-10" fill="none" stroke="#7FC8FF" stroke-width="3" stroke-linecap="round"/>`);
+   case 'cream':return W(`<path d="M10 34c0-6 6-8 8-8 0-6 4-10 6-14 2 4 6 8 6 14 2 0 8 2 8 8z" fill="${c}" ${O}/><path d="M10 34h28l-3 10H13z" fill="#FFB3CF" ${O}/>`);
+   case 'drizzle':return W(`<path d="M14 6h12l-1 12h-10z" fill="#fff" ${O}/><path d="M20 18v4" ${O}/><path d="M8 30l6 8 6-8 6 8 6-8 6 8" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 30l6 8 6-8 6 8 6-8 6 8" fill="none" stroke="#1F1A2E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>`);
+   case 'scoop':return W(`<circle cx="24" cy="20" r="12" fill="${c}" ${O}/><path d="M14 26l10 18 10-18" fill="#F2A65A" ${O}/><circle cx="20" cy="16" r="2" fill="#FF8FB8"/><circle cx="28" cy="20" r="2" fill="#7FC8FF"/>`);
+   case 'dalgona':return W(`<circle cx="24" cy="25" r="17" fill="${c}" ${O}/><path d="M24 15l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z" fill="none" stroke="#8A4F12" stroke-width="2.5" stroke-linejoin="round"/>`);
+   case 'pearl':return W(`<circle cx="16" cy="30" r="7" fill="${c}" ${O}/><circle cx="30" cy="32" r="7" fill="${c}" ${O}/><circle cx="23" cy="19" r="7" fill="${c}" ${O}/><circle cx="21" cy="17" r="2" fill="#fff"/><circle cx="14" cy="28" r="2" fill="#fff"/><circle cx="28" cy="30" r="2" fill="#fff"/>`);
+   case 'cube':return W(`<path d="M10 18l14-8 14 8v14l-14 8-14-8z" fill="${c}" ${O}/><path d="M10 18l14 8 14-8M24 26v14" fill="none" ${O}/>`);
+  }
+  return W(`<circle cx="24" cy="24" r="16" fill="${c}" ${O}/>`);
+}
+
+/* ---------- customer ---------- */
+const CUST_COLORS=['#FF8FB8','#FFC93C','#8BE38B','#9FB8FF','#FFB07A','#C9A7FF','#7FE0D6'];
+function customerSVG(color,mood,ears){
+  const eyes={wait:`<circle cx="50" cy="66" r="5" fill="#1F1A2E"/><circle cx="78" cy="66" r="5" fill="#1F1A2E"/><circle cx="52" cy="64" r="1.6" fill="#fff"/><circle cx="80" cy="64" r="1.6" fill="#fff"/>`,
+    happy:`<path d="M44 68q6-9 12 0M72 68q6-9 12 0" fill="none" ${O}/>`,
+    mid:`<circle cx="50" cy="66" r="5" fill="#1F1A2E"/><circle cx="78" cy="66" r="5" fill="#1F1A2E"/><path d="M42 56l14 4M86 56l-14 4" ${O}/>`,
+    bad:`<path d="M44 61l11 10M55 61l-11 10M73 61l11 10M84 61l-11 10" ${O}/>`}[mood];
+  const mouth={wait:`<ellipse cx="64" cy="82" rx="5" ry="4" fill="#1F1A2E"/>`,
+    happy:`<path d="M52 78q12 16 24 0z" fill="#1F1A2E"/><path d="M58 84q6 4 12 0" fill="#FF6A4D"/>`,
+    mid:`<path d="M54 84q10-5 20 0" fill="none" ${O}/>`,
+    bad:`<path d="M52 88q12-12 24 0" fill="none" ${O}/>`}[mood];
+  const extra=mood==='happy'?`<path d="M104 30c-4-6-12-2-8 4l8 8 8-8c4-6-4-10-8-4z" fill="#FF6A4D" ${O} stroke-width="2.5"/>`:
+    mood==='mid'?`<path d="M98 44c4 6 4 10 0 12-4-2-4-6 0-12z" fill="#7FC8FF" ${O} stroke-width="2.5"/>`:
+    mood==='bad'?`<path d="M96 26l6 8M108 24l-2 10M114 34l-8 4" stroke="#E5484D" stroke-width="4" stroke-linecap="round"/>`:'';
+  const ear=ears===0?`<path d="M36 42l-6-24 22 12z" fill="${color}" ${O}/><path d="M92 42l6-24-22 12z" fill="${color}" ${O}/>`:
+    ears===1?`<circle cx="38" cy="34" r="11" fill="${color}" ${O}/><circle cx="90" cy="34" r="11" fill="${color}" ${O}/>`:
+    `<path d="M64 26c-4-10 6-16 10-10" fill="none" ${O}/><circle cx="76" cy="14" r="5" fill="#FFC93C" ${O}/>`;
+  return `<svg class="cust" viewBox="0 0 128 140" role="img" aria-label="손님">
+   <ellipse cx="64" cy="134" rx="40" ry="5" fill="#1F1A2E" opacity=".18"/>
+   ${ear}
+   <path d="M20 84c0-34 20-56 44-56s44 22 44 56c0 30-20 48-44 48S20 114 20 84z" fill="${color}" ${O}/>
+   <path d="M26 108c10 14 24 22 38 22s28-8 38-22" fill="#fff" opacity=".35"/>
+   <ellipse cx="40" cy="80" rx="7" ry="4" fill="#FF6A4D" opacity="${mood==='happy'?.7:.35}"/>
+   <ellipse cx="88" cy="80" rx="7" ry="4" fill="#FF6A4D" opacity="${mood==='happy'?.7:.35}"/>
+   ${eyes}${mouth}${extra}
+  </svg>`;
+}
+
+/* ---------- cup renderer ---------- */
+const CUP={top:36,bot:226,xl0:26,xr0:174,xl1:46,xr1:154}; // inner polygon
+function cupX(y){const t=(y-CUP.top)/(CUP.bot-CUP.top);return [CUP.xl0+(CUP.xl1-CUP.xl0)*t,CUP.xr0+(CUP.xr1-CUP.xr0)*t]}
+function hexMix(list){let r=0,g=0,b=0,w=0;list.forEach(([c,h])=>{const n=parseInt(c.slice(1),16);r+=(n>>16)*h;g+=((n>>8)&255)*h;b+=(n&255)*h;w+=h});
+  if(!w)return '#fff';const f=x=>Math.round(x/w).toString(16).padStart(2,'0');return '#'+f(r)+f(g)+f(b)}
+function vol(st){const g=ING[st.i];if(g.g==='shot')return g.v;if(g.g==='syrup')return g.u==='P'?(+st.a||1)*10:(+st.a||5);
+  if(g.g==='liquid')return st.a==null?150:+st.a;if(g.g==='sauce')return st.a==null?30:(parseFloat(st.a)||30);return 0}
+function buildCup(steps,temp){
+  // liquid layers
+  let layers=[],tops=[],ice=0,brown=false,pearls=0,steamFx=false;
+  steps.forEach((st,idx)=>{const g=ING[st.i];
+    if(st.i==='brownS'){brown=true;layers.push({c:g.c,v:vol(st)*0.4,idx});return}
+    if(st.i==='pearl'){pearls=Math.max(pearls,+st.a||40);return}
+    if(['syrup','sauce','liquid','shot'].includes(g.g)){layers.push({c:g.c,v:vol(st),idx,shot:g.g==='shot'});return}
+    if(g.k==='ice'){ice=Math.max(ice,g.n2);tops.push({k:'iceMark',idx});return}
+    if(st.i==='mix'||st.i==='whisk'||st.i==='steamAct'){
+      if(st.i==='steamAct')steamFx=true;
+      if(layers.length>1){const v=layers.reduce((a,l)=>a+l.v,0);layers=[{c:hexMix(layers.map(l=>[l.c,l.v])),v,idx,mixed:1}]}
+      tops.push({k:'swirl',idx});return}
+    tops.push({k:g.k,c:g.c,i:st.i,idx});
+  });
+  const total=layers.reduce((a,l)=>a+l.v,0);const cap=CUP.bot-CUP.top-14;
+  const scale=Math.min(0.55,total?cap/total:0.55);
+  let y=CUP.bot,svg='';const last=steps.length-1;
+  const clip=`<clipPath id="cc"><path d="M${CUP.xl0} ${CUP.top} L${CUP.xr0} ${CUP.top} L${CUP.xr1} ${CUP.bot} Q100 ${CUP.bot+6} ${CUP.xl1} ${CUP.bot}z"/></clipPath>`;
+  let liq='';
+  layers.forEach(l=>{const h=Math.max(3,l.v*scale);const y0=y-h;
+    const isNew=l.idx===last;
+    liq+=`<g class="${isNew?'newlayer':''}"><rect x="0" y="${y0.toFixed(1)}" width="200" height="${(h+1).toFixed(1)}" fill="${l.c}"/>`+
+      (l.shot?`<rect x="0" y="${y0.toFixed(1)}" width="200" height="4" fill="#C47A3A" opacity=".85"/>`:'')+
+      `<path d="M0 ${y0.toFixed(1)}h200" stroke="#1F1A2E" stroke-width="1.2" opacity=".25"/></g>`;
+    y=y0});
+  const surf=y;
+  // brown sugar streaks
+  let walls='';
+  if(brown){for(let i=0;i<9;i++){const x=34+i*16;walls+=`<path d="M${x} ${CUP.top+8} q${i%2?6:-6} 40 0 80 q${i%2?-5:5} 40 0 ${70+i%3*12}" fill="none" stroke="#4A2614" stroke-width="${4+i%3}" stroke-linecap="round" opacity=".75"/>`}}
+  // pearls
+  let pe='';if(pearls){for(let i=0;i<14;i++){const x=56+(i*23)%92,yy=CUP.bot-6-((i*7)%3)*9;pe+=`<circle cx="${x}" cy="${yy}" r="6" fill="#2A1A12" stroke="#1F1A2E" stroke-width="1.5"/><circle cx="${x-2}" cy="${yy-2}" r="1.6" fill="#fff" opacity=".8"/>`}}
+  // ice
+  let ic='';if(ice){const lowY=Math.min(CUP.bot-20,Math.max(surf,CUP.top+40));const span=CUP.bot-30-(CUP.top+18);
+    for(let i=0;i<ice;i++){const yy=CUP.top+22+((i*37)%Math.max(40,span));const [a,b]=cupX(yy);const x=a+10+((i*53)%Math.max(10,(b-a-40)));
+      const iceNew=tops.some(t=>t.k==='iceMark'&&t.idx===last);
+      ic+=`<g ${iceNew?`class="drop" style="animation-delay:${i*40}ms"`:''}><rect x="${x.toFixed(1)}" y="${yy.toFixed(1)}" width="26" height="24" rx="6" fill="#EAF9FF" fill-opacity=".72" stroke="#1F1A2E" stroke-width="2" transform="rotate(${(i*29)%40-20} ${x+13} ${yy+12})"/></g>`}}
+  // toppings above surface
+  let tp='';let ty=Math.min(surf,CUP.bot-4);
+  const isNew=t=>t.idx===last;
+  tops.forEach(t=>{
+    if(t.k==='swirl'&&isNew(t)){tp+=`<path class="drop" d="M70 ${ty-30} q30 -20 60 0 q-30 20 -60 0" fill="none" stroke="#FF6A4D" stroke-width="4" stroke-linecap="round"/>`}
+    if(t.k==='squeeze'){tp+=`<path d="M40 ${CUP.top+20} q60 30 120 0" fill="none" stroke="${t.c}" stroke-width="6" stroke-linecap="round" opacity=".85"/>`}
+    if(t.k==='cream'){const [a,b]=cupX(Math.max(ty,CUP.top+4));
+      tp+=`<g class="${isNew(t)?'drop':''}"><path d="M${a-2} ${ty} c0-22 18-26 26-24 c4-16 18-24 26-28 c8 4 22 12 26 28 c8-2 26 2 26 24z" fill="${t.c}" stroke="#1F1A2E" stroke-width="3" stroke-linejoin="round"/></g>`;ty-=34}
+    if(t.k==='scoop'){tp+=`<g class="${isNew(t)?'drop':''}"><circle cx="100" cy="${ty-16}" r="26" fill="${t.c}" stroke="#1F1A2E" stroke-width="3"/><circle cx="90" cy="${ty-24}" r="3" fill="#FF8FB8"/><circle cx="110" cy="${ty-12}" r="3" fill="#7FC8FF"/></g>`;ty-=36}
+    if(t.k==='drizzle'){tp+=`<path class="${isNew(t)?'drop':''}" d="M52 ${ty-4} l12 -10 12 10 12 -10 12 10 12 -10 12 10 12 -10" fill="none" stroke="${t.c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`}
+    if(t.k==='powder'){let d='';for(let i=0;i<16;i++){d+=`<circle cx="${62+(i*29)%76}" cy="${ty-6-(i*13)%18}" r="2.4" fill="${t.c}"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
+    if(t.k==='dalgona'){let d='';for(let i=0;i<6;i++){d+=`<path d="M${60+i*14} ${ty-4-(i%2)*8} l8 -4 6 6 -6 6 -8 -2z" fill="#E09B2D" stroke="#1F1A2E" stroke-width="2"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
+    if(t.k==='cube'){let d='';for(let i=0;i<5;i++){d+=`<rect x="${60+i*16}" y="${ty-12-(i%2)*8}" width="14" height="14" rx="3" fill="#FFC23D" stroke="#1F1A2E" stroke-width="2"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
+  });
+  const hot=temp==='HOT';
+  const steamPaths=(hot||steamFx)&&layers.length?`<g class="steam" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><path d="M70 22c-8-10 8-14 0-24"/><path d="M100 18c-8-10 8-14 0-24"/><path d="M130 22c-8-10 8-14 0-24"/></g>`:'';
+  const sleeve=hot?`<path d="M${cupX(120)[0]-2} 120 L${cupX(120)[1]+2} 120 L${cupX(168)[1]+2} 168 L${cupX(168)[0]-2} 168z" fill="#E7B67A" stroke="#1F1A2E" stroke-width="3" opacity=".92"/><text x="100" y="150" text-anchor="middle" font-family="Jua,sans-serif" font-size="18" fill="#1F1A2E">HOT</text>`:'';
+  return `<svg viewBox="-6 -10 212 252" role="img" aria-label="컵에 담긴 재료 ${steps.length}단계">
+    <defs>${clip}</defs>
+    <ellipse cx="100" cy="236" rx="70" ry="6" fill="#1F1A2E" opacity=".18"/>
+    ${steamPaths}
+    <path d="M${CUP.xl0} ${CUP.top} L${CUP.xr0} ${CUP.top} L${CUP.xr1} ${CUP.bot} Q100 ${CUP.bot+6} ${CUP.xl1} ${CUP.bot}z" fill="${hot?'#FFF6EA':'#EEF9FF'}"/>
+    <g clip-path="url(#cc)">${liq}${walls}${pe}${ic}</g>
+    <path d="M${CUP.xl0+12} ${CUP.top+16} L${CUP.xl1+8} ${CUP.bot-16}" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+    <path d="M${CUP.xl0} ${CUP.top} L${CUP.xr0} ${CUP.top} L${CUP.xr1} ${CUP.bot} Q100 ${CUP.bot+6} ${CUP.xl1} ${CUP.bot}z" fill="none" stroke="#1F1A2E" stroke-width="4" stroke-linejoin="round"/>
+    <rect x="${CUP.xl0-6}" y="${CUP.top-8}" width="${CUP.xr0-CUP.xl0+12}" height="10" rx="5" fill="#fff" stroke="#1F1A2E" stroke-width="3.5"/>
+    ${sleeve}${tp}
+  </svg>`;
+}
+
+/* ---------- storage ---------- */
+const SKEY='barTrainer.v1';
+function load(){try{return JSON.parse(localStorage.getItem(SKEY))||{}}catch(e){return {}}}
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(store))}catch(e){}}
+const store=Object.assign({cards:{},best:0,stage:'1'},load());
+function card(k){return store.cards[k]||(store.cards[k]={box:1,seen:0,perfect:0,miss:0,last:0})}
+
+/* ---------- state ---------- */
+const S={mode:'practice',stage:String(store.stage||'1'),cur:null,cup:[],hint:false,tab:'syrup',
+  rush:{on:false,left:0,score:0,combo:0,made:0,perfect:0,timer:null},streak:0,lastKey:null,no:0,cust:{color:'#FF8FB8',ears:0},mood:'wait'};
+const RUSH_SEC=90;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function fmt(st){const g=ING[st.i];if(st.a==null||st.a==='')return g.n;return g.n+' '+st.a+(g.u==='P'?'P':'')}
+const gcol=g=>GROUPS.find(x=>x.id===g).c;
+function pool(){return S.stage==='all'?RECIPES:RECIPES.filter(r=>String(r.ch)===S.stage)}
+function pickNext(){const p=pool();let tot=0;
+  const w=p.map(r=>{let x=6-card(r.key).box;if(r.key===S.lastKey&&p.length>1)x=0;tot+=x;return x});
+  let t=Math.random()*tot;for(let i=0;i<p.length;i++){t-=w[i];if(t<=0)return p[i]}return p[p.length-1]}
+function newTicket(){
+  S.cur=pickNext();S.lastKey=S.cur.key;S.cup=[];S.hint=false;S.no++;S.mood='wait';
+  S.cust={color:CUST_COLORS[Math.floor(Math.random()*CUST_COLORS.length)],ears:Math.floor(Math.random()*3)};
+  renderScene('in');renderCup();
+}
+
+/* ---------- grading ---------- */
+function grade(R,U){
+  const used=new Set(),match=R.steps.map(()=>-1);
+  R.steps.forEach((r,ri)=>{for(let u=0;u<U.length;u++){if(!used.has(u)&&U[u].i===r.i){match[ri]=u;used.add(u);break}}});
+  const missing=[],amt=[],rows=[];
+  R.steps.forEach((r,ri)=>{const m=match[ri];
+    if(m<0){rows.push({st:r.opt?'opt':'miss',r});if(!r.opt)missing.push(ri);return}
+    if(r.a!=null&&String(U[m].a)!==String(r.a)){amt.push(ri);rows.push({st:'amt',r,u:U[m]});return}
+    rows.push({st:'ok',r})});
+  const extra=U.map((u,i)=>i).filter(i=>!used.has(i));
+  const seq=match.filter(m=>m>=0);let orderOk=true;for(let i=1;i<seq.length;i++)if(seq[i]<seq[i-1]){orderOk=false;break}
+  const perfect=!missing.length&&!amt.length&&!extra.length&&orderOk;
+  const score=Math.max(0,100-25*missing.length-15*extra.length-15*amt.length-(orderOk?0:10));
+  return {missing,amt,extra,orderOk,perfect,score,rows};
+}
+
+/* ---------- render ---------- */
+function renderStageSel(){const sel=$('stage');sel.innerHTML='';
+  [['1',CHAPTERS[1]],['2',CHAPTERS[2]],['3',CHAPTERS[3]],['all','전체 (1~3장)']].forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;sel.appendChild(o)});
+  sel.value=S.stage}
+function mastery(){const p=pool();return Math.round(100*p.filter(r=>card(r.key).box>=3).length/p.length)}
+function renderHud(){
+  const h=$('hud');
+  if(S.mode==='rush'){h.innerHTML=`<span class="badge t ${S.rush.left<=15?'low':''}">⏱ ${S.rush.left}</span><span class="badge">${S.rush.score}점</span><span class="badge">콤보 ${S.rush.combo}</span>`;
+    const p=$('patience');p.hidden=false;const pct=Math.max(0,S.rush.left/RUSH_SEC*100);const i=p.querySelector('i');i.style.width=pct+'%';i.style.background=pct<20?'var(--bad)':pct<50?'var(--mid)':'var(--ok)'}
+  else{h.innerHTML=`<span class="badge">연속 ${S.streak}</span><span class="badge">숙련 ${mastery()}%</span>`;$('patience').hidden=true}
+}
+function renderScene(anim){
+  const r=S.cur,c=card(r.key);
+  $('cust').innerHTML=customerSVG(S.cust.color,S.mood,S.cust.ears);
+  const el=$('cust').firstElementChild;if(anim)el.classList.add(anim);
+  $('bubble').innerHTML=`<div class="b-no">주문 #${String(S.no).padStart(3,'0')} · ${esc(CHAPTERS[r.ch])}</div>
+    <div class="b-name">${esc(r.name)}</div>
+    <div class="b-row"><span class="tag ${r.temp}">${r.temp}</span><span class="b-meta">${S.mode==='practice'?'단계 '+r.steps.filter(s=>!s.opt).length+'개 · ':''}숙련 ${c.box}/5</span></div>`;
+}
+function renderCup(){
+  $('cup').innerHTML=buildCup(S.cup,S.cur.temp);
+  const box=$('steps');
+  if(!S.cup.length)box.innerHTML='<div class="empty">아래 재료를 레시피 순서대로 눌러서 컵에 담아요!</div>';
+  else box.innerHTML=S.cup.map((s,i)=>`<div class="step ${i===S.cup.length-1?'last':''}"><i style="background:${ING[s.i].c||gcol(ING[s.i].g)}"></i><em>${esc(fmt(s))}</em><button type="button" aria-label="${esc(fmt(s))} 빼기" data-rm="${i}">×</button></div>`).join('');
+  box.scrollTop=box.scrollHeight;
+  $('cupCount').textContent=S.cup.length?S.cup.length+'단계':'';
+  $('undoBtn').disabled=!S.cup.length;
+  $('hintBtn').hidden=S.mode==='rush';
+  const hl=$('hintLine');
+  if(S.hint){const nx=S.cur.steps[S.cup.length];hl.hidden=false;hl.textContent=nx?`💡 다음: ${fmt(nx)}${nx.opt?' (선택)':''}`:'다 담았어요! 제조 완료를 눌러요.'}
+  else hl.hidden=true;
+  renderHud();
+}
+function renderTabs(){
+  $('tabs').innerHTML=GROUPS.map(g=>`<button class="tab" role="tab" type="button" aria-selected="${g.id===S.tab}" data-tab="${g.id}"><i style="background:${g.c}"></i>${g.n}</button>`).join('');
+  $('grid').innerHTML=Object.entries(ING).filter(([k,v])=>v.g===S.tab).map(([k,v])=>`<button class="ing press" type="button" data-ing="${k}">${icon(k)}${esc(v.n)}</button>`).join('');
+}
+
+/* ---------- sheets ---------- */
+let sheetOpen=false;
+window.addEventListener('popstate',()=>{if(sheetOpen){sheetOpen=false;$('layer').innerHTML=''}});
+function openSheet(html,onClick){
+  if(!sheetOpen){try{history.pushState({sheet:1},'')}catch(e){}}
+  sheetOpen=true;
+  $('layer').innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  const sc=$('scrim');sc.addEventListener('click',e=>{if(e.target===sc)closeSheet();else onClick&&onClick(e)});
+  const f=sc.querySelector('button');f&&f.focus();
+}
+function closeSheet(){if(!sheetOpen)return;sheetOpen=false;$('layer').innerHTML='';try{if(history.state&&history.state.sheet)history.back()}catch(e){}}
+function askAmount(id){
+  const g=ING[id];const opts=g.opts?g.opts.slice():UNIT_OPTS[g.u].map(String);
+  openSheet(`<h2>${icon(id)}${esc(g.n)}</h2><p class="sub">${g.d?esc(g.d)+' · ':''}${g.u==='P'?'몇 펌프?':g.u==='ml'?'몇 ml?':'얼마나?'}</p>
+    <div class="amounts">${opts.map(o=>`<button class="amt press" type="button" data-amt="${esc(o)}">${esc(o)}${g.u==='P'?'P':''}</button>`).join('')}
+    <button class="amt skip press" type="button" data-amt="">양 생략</button></div>
+    <div class="foot"><button class="btn press" type="button" data-close>취소</button></div>`,e=>{
+      const b=e.target.closest('[data-amt],[data-close]');if(!b)return;
+      if(b.hasAttribute('data-close')){closeSheet();return}
+      const a=b.dataset.amt;S.cup.push({i:id,a:a===''?null:(isNaN(+a)?a:+a)});closeSheet();renderCup()});
+}
+function confetti(){const box=$('confetti');const cols=['#FF6A4D','#FFC93C','#7FC8FF','#8BE38B','#FF8FB8','#C9A7FF'];
+  box.innerHTML=Array.from({length:36},(_,i)=>`<i style="left:${Math.random()*100}%;background:${cols[i%cols.length]};animation-delay:${Math.random()*.3}s;animation-duration:${1+Math.random()*.8}s"></i>`).join('');
+  setTimeout(()=>box.innerHTML='',2200)}
+function submit(){
+  if(!S.cur)return;
+  const res=grade(S.cur,S.cup),c=card(S.cur.key);
+  c.seen++;c.last=Date.now();
+  if(res.perfect&&!S.hint){c.box=Math.min(5,c.box+1);c.perfect++}else if(!res.perfect){c.box=1;c.miss++}
+  if(S.mode==='rush'){S.rush.made++;if(res.perfect){S.rush.perfect++;S.rush.score+=100+S.rush.combo*20;S.rush.combo++}else S.rush.combo=0}
+  else S.streak=res.perfect?S.streak+1:0;
+  save();
+  S.mood=res.perfect?'happy':res.score>=60?'mid':'bad';
+  renderScene(res.perfect?'happy':S.mood==='bad'?'mad':null);renderHud();
+  if(res.perfect)confetti();
+  setTimeout(()=>showResult(res),res.perfect?550:400);
+}
+function showResult(res){
+  const cls=res.perfect?'good':res.score>=60?'mid':'bad';
+  const word=res.perfect?(S.hint?'완성!':'PERFECT!'):res.score>=60?'아깝다!':'다시!';
+  const rows=res.rows.map(x=>{
+    if(x.st==='ok')return `<li class="ok"><span class="m">✓</span><span>${esc(fmt(x.r))}</span></li>`;
+    if(x.st==='amt')return `<li class="amt"><span class="m">!</span><span>${esc(fmt(x.r))}<small>내가 넣은 양: ${esc(fmt(x.u))}</small></span></li>`;
+    if(x.st==='opt')return `<li class="opt"><span class="m">–</span><span>${esc(fmt(x.r))}<small>선택 사항</small></span></li>`;
+    return `<li class="miss"><span class="m">✗</span><span>${esc(fmt(x.r))}<small>빠뜨렸어요</small></span></li>`}).join('');
+  const extra=res.extra.length?`<div class="rhead">레시피에 없는 재료</div><div class="chips">${res.extra.map(i=>`<span class="chip">${esc(fmt(S.cup[i]))}</span>`).join('')}</div>`:'';
+  const order=!res.orderOk?`<div class="rhead">순서가 달라요 · 내가 담은 순서</div><div class="chips">${S.cup.map((s,i)=>`<span class="chip n">${i+1}. ${esc(fmt(s))}</span>`).join('')}</div>`:'';
+  const note=S.cur.note?`<div class="note">📌 ${esc(S.cur.note)}</div>`:'';
+  openSheet(`<div class="stamp ${cls}"><b>${word}</b><span>${res.score}점</span></div>
+    <p class="sub">${esc(S.cur.name)} ${S.cur.temp} · 정답 레시피 순서</p>
+    <ol class="rlist">${rows}</ol>${extra}${order}${note}
+    <div class="foot">${!res.perfect&&S.mode==='practice'?'<button class="btn press" type="button" data-retry>같은 메뉴 다시</button>':''}<button class="btn go press" type="button" data-next>다음 손님</button></div>`,e=>{
+      if(e.target.closest('[data-next]')){closeSheet();if(S.mode==='rush'&&!S.rush.on)return;newTicket()}
+      else if(e.target.closest('[data-retry]')){closeSheet();S.cup=[];S.hint=false;S.mood='wait';renderScene();renderCup()}});
+}
+function openBook(){
+  const groups={};pool().forEach(r=>{(groups[r.ch]=groups[r.ch]||[]).push(r)});
+  const html=Object.keys(groups).map(ch=>`<div class="book"><h3>${esc(CHAPTERS[ch])}</h3>${groups[ch].map(r=>{const c=card(r.key);
+    return `<div class="brow"><div class="nm">${esc(r.name)} <span class="tag ${r.temp}">${r.temp}</span><span class="pips" aria-label="숙련 ${c.box}/5">${[1,2,3,4,5].map(i=>`<i class="${i<=c.box?'on':''}"></i>`).join('')}</span></div>
+    <div class="rc">${r.steps.map(s=>esc(fmt(s))+(s.opt?'(선택)':'')).join(' → ')}${r.note?' · '+esc(r.note):''}</div></div>`}).join('')}</div>`).join('');
+  openSheet(`<h2>📖 레시피북</h2><p class="sub">지금 스테이지 레시피예요. 외우고 닫은 다음 연습해요.</p>${html}<div class="foot"><button class="btn press" type="button" data-close>닫기</button></div>`,e=>{if(e.target.closest('[data-close]'))closeSheet()});
+}
+function openStats(){
+  const all=RECIPES.map(r=>({r,c:card(r.key)}));const seen=all.filter(x=>x.c.seen>0);
+  const tot=seen.reduce((a,x)=>a+x.c.seen,0),perf=seen.reduce((a,x)=>a+x.c.perfect,0);
+  const worst=seen.filter(x=>x.c.miss>0).sort((a,b)=>b.c.miss-a.c.miss||a.c.box-b.c.box).slice(0,10);
+  const chBars=[1,2,3].map(ch=>{const p=RECIPES.filter(r=>r.ch===ch);const m=p.filter(r=>card(r.key).box>=3).length;
+    return `<div class="brow"><div class="nm">${esc(CHAPTERS[ch])} <span class="rc">${m}/${p.length} 익힘</span></div><div class="meter"><i style="width:${Math.round(100*m/p.length)}%"></i></div></div>`}).join('');
+  openSheet(`<h2>📝 오답노트</h2><p class="sub">숙련 3/5 이상이면 익힌 메뉴예요. 틀리면 1로 돌아가요.</p>
+    <div class="stats"><div class="stat"><b>${tot}</b><span>만든 잔</span></div><div class="stat"><b>${tot?Math.round(100*perf/tot):0}%</b><span>완벽률</span></div><div class="stat"><b>${store.best||0}</b><span>러시 최고점</span></div></div>
+    ${chBars}<div class="rhead">자주 틀린 메뉴 TOP 10</div>
+    ${worst.length?worst.map(x=>`<div class="brow"><div class="nm">${esc(x.r.name)} <span class="tag ${x.r.temp}">${x.r.temp}</span><span class="rc">틀림 ${x.c.miss} · 숙련 ${x.c.box}/5</span></div><div class="rc">${x.r.steps.map(s=>esc(fmt(s))).join(' → ')}</div></div>`).join(''):'<p class="sub">아직 틀린 메뉴가 없어요.</p>'}
+    <div class="foot"><button class="btn press" type="button" data-reset>기록 초기화</button><button class="btn go press" type="button" data-close>닫기</button></div>`,e=>{
+      if(e.target.closest('[data-close]'))closeSheet();
+      else if(e.target.closest('[data-reset]')){const b=e.target.closest('[data-reset]');
+        if(b.dataset.armed){store.cards={};store.best=0;save();closeSheet();S.streak=0;renderHud();renderScene()}
+        else{b.dataset.armed='1';b.textContent='한 번 더 누르면 초기화'}}});
+}
+
+/* ---------- rush ---------- */
+function startRush(){clearInterval(S.rush.timer);Object.assign(S.rush,{on:true,left:RUSH_SEC,score:0,combo:0,made:0,perfect:0});newTicket();
+  S.rush.timer=setInterval(()=>{S.rush.left--;renderHud();if(S.rush.left<=0)endRush()},1000)}
+function endRush(){clearInterval(S.rush.timer);S.rush.on=false;
+  const best=S.rush.score>(store.best||0);if(best){store.best=S.rush.score;save();confetti()}
+  openSheet(`<div class="stamp good"><b>마감!</b><span>${S.rush.score}점</span></div>
+    <div class="stats"><div class="stat"><b>${S.rush.made}</b><span>만든 잔</span></div><div class="stat"><b>${S.rush.perfect}</b><span>완벽</span></div><div class="stat"><b>${store.best}</b><span>${best?'🎉 새 최고점':'최고점'}</span></div></div>
+    <div class="foot"><button class="btn press" type="button" data-practice>연습으로</button><button class="btn go press" type="button" data-again>한 판 더</button></div>`,e=>{
+      if(e.target.closest('[data-again]')){closeSheet();startRush()}else if(e.target.closest('[data-practice]')){closeSheet();setMode('practice')}})}
+function setMode(m){S.mode=m;$('modePractice').setAttribute('aria-pressed',m==='practice');$('modeRush').setAttribute('aria-pressed',m==='rush');
+  clearInterval(S.rush.timer);S.rush.on=false;if(m==='rush')startRush();else newTicket()}
+
+/* ---------- events ---------- */
+$('grid').addEventListener('click',e=>{const b=e.target.closest('[data-ing]');if(!b)return;const id=b.dataset.ing;
+  if(ING[id].u)askAmount(id);else{S.cup.push({i:id,a:null});renderCup()}});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;S.tab=b.dataset.tab;renderTabs()});
+$('steps').addEventListener('click',e=>{const b=e.target.closest('[data-rm]');if(!b)return;S.cup.splice(+b.dataset.rm,1);renderCup()});
+$('undoBtn').addEventListener('click',()=>{S.cup.pop();renderCup()});
+$('hintBtn').addEventListener('click',()=>{S.hint=true;renderCup()});
+$('doneBtn').addEventListener('click',submit);
+$('modePractice').addEventListener('click',()=>setMode('practice'));
+$('modeRush').addEventListener('click',()=>setMode('rush'));
+$('stage').addEventListener('change',e=>{S.stage=e.target.value;store.stage=S.stage;save();setMode(S.mode)});
+$('bookBtn').addEventListener('click',openBook);
+$('statsBtn').addEventListener('click',openStats);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('layer').innerHTML)closeSheet()});
+document.addEventListener('visibilitychange',()=>{if(S.mode!=='rush'||!S.rush.on)return;
+  if(document.hidden)clearInterval(S.rush.timer);else{clearInterval(S.rush.timer);S.rush.timer=setInterval(()=>{S.rush.left--;renderHud();if(S.rush.left<=0)endRush()},1000)}});
+renderStageSel();renderTabs();newTicket();
+</script>
+
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+</body>
+</html>
