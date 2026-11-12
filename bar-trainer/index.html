@@ -231,7 +231,7 @@ select{font-family:var(--f-display);font-size:15px;padding:7px 10px;border:var(-
     <div class="grid" id="grid"></div>
   </section>
 
-  <p class="fine">기록은 이 기기에만 저장됩니다 · 레시피 출처: 컴포즈커피 레시피 정리 1~3장</p>
+  <p class="fine">기록은 이 기기에만 저장됩니다 · 레시피 출처: 컴포즈커피 레시피 정리 1~10장</p>
 </div>
 <div id="layer"></div>
 <div class="confetti" id="confetti"></div>
@@ -240,7 +240,8 @@ select{font-family:var(--f-display);font-size:15px;padding:7px 10px;border:var(-
 /* ---------- data ---------- */
 const GROUPS=[
  {id:'syrup',n:'시럽',c:'#FFC93C'},{id:'sauce',n:'소스·베이스',c:'#B5743F'},{id:'liquid',n:'우유·물',c:'#7FC8FF'},
- {id:'shot',n:'샷',c:'#5A2E17'},{id:'ice',n:'얼음·동작',c:'#9FE3FF'},{id:'top',n:'토핑',c:'#FF8FB8'}];
+ {id:'powder',n:'파우더',c:'#E8D3A8'},{id:'fruit',n:'과일·청',c:'#FF9E5E'},{id:'tea',n:'티',c:'#B07A4A'},
+ {id:'shot',n:'샷',c:'#5A2E17'},{id:'ice',n:'얼음·블렌더',c:'#9FE3FF'},{id:'top',n:'토핑',c:'#FF8FB8'}];
 // k = icon kind, c = color in cup
 const ING={
  van:{n:'바닐라시럽',g:'syrup',u:'P',k:'pump',c:'#F6E3A8'},haz:{n:'헤이즐넛시럽',g:'syrup',u:'P',k:'pump',c:'#C9935F'},
@@ -248,11 +249,10 @@ const ING={
  vanConc:{n:'바닐라시럽(고농축)',g:'syrup',u:'g',k:'pump',c:'#F2CF6E'},
  choco:{n:'초코소스',g:'sauce',u:'g',k:'squeeze',c:'#5A2F1E'},caramelS:{n:'카라멜소스',g:'sauce',u:'g',k:'squeeze',c:'#C9772C'},
  caramelB:{n:'카라멜베이스',g:'sauce',u:'g',k:'jar',c:'#DDA466'},dolceB:{n:'돌체베이스',g:'sauce',u:'g',k:'jar',c:'#EBCB9F'},
- condensed:{n:'연유',g:'sauce',u:'g',k:'squeeze',c:'#F7EACB'},brownS:{n:'흑당소스',g:'sauce',u:'g',k:'squeeze',c:'#4A2614',d:'컵에 둘러 묻히기'},
- brownSugar:{n:'흑당',g:'sauce',u:'g',k:'jar',c:'#6E3A1D'},honey:{n:'꿀',g:'sauce',u:'g',k:'honey',c:'#F4B225'},
+ condensed:{n:'연유',g:'sauce',u:'g',k:'squeeze',c:'#F7EACB'},brownS:{n:'흑당소스',g:'sauce',u:'g',k:'squeeze',c:'#4A2614',d:'흑당라떼류는 컵 벽에 둘러 묻히기'},honey:{n:'꿀',g:'sauce',u:'g',k:'honey',c:'#F4B225'},
  nuttyB:{n:'너티베이스',g:'sauce',u:'g',k:'jar',c:'#D3B28A'},pineB:{n:'파인애플베이스',g:'sauce',u:'g',k:'jar',c:'#F7D84E'},
  mixB:{n:'믹스커피베이스',g:'sauce',u:'g',k:'jar',c:'#C49466'},peachB:{n:'복숭아티베이스',g:'sauce',u:'g',k:'jar',c:'#F7A27C'},
- vanPowder:{n:'바닐라파우더',g:'sauce',u:'g',k:'powder',c:'#F6E9C2'},
+ vanPowder:{n:'바닐라파우더',g:'powder',u:'g',k:'powder',c:'#F6E9C2'},
  milk:{n:'우유',g:'liquid',u:'ml',k:'carton',c:'#FFFFFF'},steam:{n:'스팀우유',g:'liquid',u:'ml',k:'pitcher',c:'#FBF5EA'},
  oat:{n:'오트우유',g:'liquid',u:'ml',k:'carton',c:'#EEDDBB'},water:{n:'물',g:'liquid',u:'ml',k:'drop',c:'#BFE6FA'},
  hot:{n:'온수',g:'liquid',u:'ml',k:'kettle',c:'#CBEAF8'},purified:{n:'정수',g:'liquid',u:'ml',k:'drop',c:'#C6E8F9'},
@@ -268,9 +268,56 @@ const ING={
  vanCream:{n:'바닐라크림',g:'top',u:'g',k:'cream',c:'#FFF1C9'},nuttyCream:{n:'너티크림베이스',g:'top',u:'g',k:'cream',c:'#EED8BC'},
  icecream:{n:'아이스크림',g:'top',u:'g',k:'scoop',c:'#FFF6E0'},dalgona:{n:'달고나',g:'top',u:'g',k:'dalgona',c:'#E09B2D'},
  pearl:{n:'펄',g:'top',u:'g',k:'pearl',c:'#2A1A12'},mango:{n:'냉동망고다이스',g:'top',u:'g',k:'cube',c:'#FFC23D',opts:['50','80~100']}
+ ,sugarG:{n:'설탕',g:'syrup',u:'g',k:'powder',c:'#FFFFFF',opts:['10','20','30']},
+ blueCuracao:{n:'블루큐라소',g:'syrup',u:'P',k:'pump',c:'#3FA7F5'},
+ chocoB:{n:'초코베이스',g:'sauce',u:'g',k:'jar',c:'#6B3A22'},sweetPotatoB:{n:'고구마베이스',g:'sauce',u:'g',k:'jar',c:'#E8B04F'},
+ msB:{n:'밀크쉐이크베이스',g:'sauce',u:'ml',k:'carton',c:'#FFF7E6'},candyB:{n:'캔디소다베이스',g:'sauce',u:'g',k:'jar',c:'#8FD8FF'},
+ condensedB:{n:'연유베이스',g:'sauce',u:'g',k:'jar',c:'#F7EACB'},lycheeB:{n:'리치베이스',g:'sauce',u:'g',k:'jar',c:'#F8E3E6'},
+ maesilB:{n:'매실액',g:'sauce',u:'g',k:'jar',c:'#C9D86A',opts:['50','70','100']},grapeB:{n:'청포도원액',g:'sauce',u:'g',k:'jar',c:'#B7E07A'},
+ grainPw:{n:'곡물파우더',g:'powder',u:'g',k:'powder',c:'#D9C39A',opts:['2SP','3SP','35','45','55','60']},
+ greenPw:{n:'그린티파우더',g:'powder',u:'g',k:'powder',c:'#8BBF5A',opts:['2SP','3SP','35','45','55','60']},
+ greenLattePw:{n:'녹차라떼파우더',g:'powder',u:'g',k:'powder',c:'#9BCB6A',opts:['1','1SP','2SP','3SP','3.5SP']},
+ javaPw:{n:'자바칩파우더',g:'powder',u:'g',k:'powder',c:'#6B3B22',opts:['1SP','2SP','3SP','3.5SP']},
+ cookiePw:{n:'쿠키앤크림파우더',g:'powder',u:'g',k:'powder',c:'#9A8F86',opts:['1SP','2SP','3SP','3.5SP']},
+ yogurtPw:{n:'요거트파우더',g:'powder',u:'g',k:'powder',c:'#FFFFFF',opts:['1SP','2SP','3SP','3.5SP']},
+ msPw:{n:'밀크쉐이크파우더',g:'powder',u:'g',k:'powder',c:'#FFF3D6',opts:['1SP','2SP','3SP','3.5SP']},
+ peachPw:{n:'복숭아파우더',g:'powder',u:'g',k:'powder',c:'#F7B08A',opts:['30','40','50','60']},
+ strawPu:{n:'딸기퓨레',g:'fruit',u:'g',k:'squeeze',c:'#F0475E',opts:['40','80','100','160']},
+ mangoPu:{n:'망고퓨레',g:'fruit',u:'g',k:'squeeze',c:'#FFB52E',opts:['40','80','100','160']},
+ bluePu:{n:'블루베리퓨레',g:'fruit',u:'g',k:'squeeze',c:'#5B4BB7',opts:['40','80','100','160']},
+ strawSm:{n:'딸기스무디',g:'fruit',u:'g',k:'jar',c:'#F26A7E',opts:['100','140','160','200']},
+ mangoSm:{n:'망고스무디',g:'fruit',u:'g',k:'jar',c:'#FFC04A',opts:['100','140','160','200']},
+ blueSm:{n:'블루베리스무디',g:'fruit',u:'g',k:'jar',c:'#6E5CC8',opts:['100','140','160','200']},
+ yuzuB:{n:'유자베이스',g:'fruit',u:'g',k:'jar',c:'#FFD23F',opts:['50','80','100','140']},
+ yuzuJam:{n:'유자청',g:'fruit',u:'g',k:'jar',c:'#FFC82E',opts:['1SP','30','50','80','100']},
+ grapefruitJam:{n:'자몽청',g:'fruit',u:'g',k:'jar',c:'#FF7A6B',opts:['30','50','80','100']},
+ lemonJam:{n:'레몬청',g:'fruit',u:'g',k:'jar',c:'#FFE45C',opts:['30','50','80','100']},
+ gfHoneyBlack:{n:'자몽허니블랙청',g:'fruit',u:'g',k:'jar',c:'#E8664E',opts:['50','70','90','100']},
+ grapefruitC:{n:'자몽농축액',g:'fruit',u:'g',k:'squeeze',c:'#FF8A7A',opts:['20','30','40','50']},
+ lemonC:{n:'레몬농축액',g:'fruit',u:'g',k:'squeeze',c:'#FFF07A',opts:['20','30','40','50']},
+ lemonJ:{n:'레몬주스',g:'fruit',u:'P',k:'pump',c:'#FFF4A3'},
+ kiwiP:{n:'키위 1팩',g:'fruit',k:'fruit',c:'#8CC63F'},ocP:{n:'오렌지당근 1팩',g:'fruit',k:'fruit',c:'#FF8C2E'},
+ wmP:{n:'수박 1팩',g:'fruit',k:'fruit',c:'#F2545B'},tomatoP:{n:'꿀토마토 1팩',g:'fruit',k:'fruit',c:'#E8362E'},
+ bananaP:{n:'바나나그레인 1팩',g:'fruit',k:'fruit',c:'#F7D95C'},strawFrozen:{n:'냉동딸기',g:'fruit',u:'g',k:'fruit',c:'#E9365A',opts:['100','150','200']},
+ wmDice:{n:'수박다이스',g:'fruit',u:'g',k:'cube',c:'#F2545B',opts:['30','50','100']},
+ cider:{n:'사이다',g:'liquid',u:'ml',k:'can',c:'#E9F8FF',opts:['150','200','250','300']},
+ blackTea:{n:'잉글리시블랙퍼스트',g:'tea',k:'tea',c:'#7A3E1C'},teaBag:{n:'유기농티 티백',g:'tea',k:'tea',c:'#9BB86A'},
+ iceG:{n:'얼음(계량)',g:'ice',u:'g',k:'ice',n2:9,opts:['120','200','320']},
+ mix1:{n:'블렌더 Mix1',g:'ice',k:'blender',c:'#9FE3FF'},mix2:{n:'블렌더 Mix2',g:'ice',k:'blender',c:'#FFC93C'},mix3:{n:'블렌더 Mix3',g:'ice',k:'blender',c:'#FF8FB8'},
+ strain:{n:'씨 거르기',g:'ice',k:'spoon'},
+ chocoThick:{n:'초코소스 두껍게 1바퀴',g:'ice',k:'squeeze',c:'#5A2F1E'},caramelLine:{n:'컵 벽 카라멜 1바퀴',g:'ice',k:'squeeze',c:'#C9772C'},
+ chocoChunk:{n:'초콜릿청크',g:'top',u:'g',k:'cube',c:'#4A2614',opts:['5','10','20']},chocoLump:{n:'초코 한 덩이',g:'top',k:'cube',c:'#4A2614'},
+ cookieCrumb:{n:'쿠키크럼',g:'top',u:'g',k:'powder',c:'#3A3030',opts:['5','10','1SP']},
+ lotusCrumb:{n:'로투스크럼',g:'top',u:'g',k:'powder',c:'#B97A3C',opts:['1SP','2SP']},lotusCookie:{n:'로투스 쿠키 1개',g:'top',k:'dalgona',c:'#C68645'},
+ redBean:{n:'팥',g:'top',u:'g',k:'pearl',c:'#7A2630',opts:['40','1스푼','1스쿱']},injeolmi:{n:'인절미',g:'top',u:'g',k:'cube',c:'#E8D3A0',opts:['10','1스푼']},
+ berry:{n:'베리',g:'top',u:'g',k:'cube',c:'#9C2F6A',opts:['1SP','2SP']},chocoRing:{n:'초코링',g:'top',u:'g',k:'cube',c:'#5A2F1E',opts:['1SP','2SP']},
+ granola:{n:'그래놀라',g:'top',u:'g',k:'powder',c:'#C99A55',opts:['1SP','2SP']},
+ condensedDr:{n:'연유 드리즐',g:'top',k:'drizzle',c:'#F7EACB'},pinkSalt:{n:'핑크솔트 2바퀴',g:'top',k:'powder',c:'#F59AB5'},
+ yuzuTop:{n:'유자청 토핑',g:'top',u:'g',k:'cube',c:'#FFC82E',opts:['1SP']}
 };
-const UNIT_OPTS={P:[0.5,1,1.5,2,3,4,5],ml:[100,150,200,250,270,280,300,350],g:[5,10,30,40,50,60,80,100,115,200,280,300,430,450]};
-const CHAPTERS={1:'1장 에스프레소 커피',2:'2장 흑당·크림·스페셜',3:'3장 빅포즈'};
+const UNIT_OPTS={P:[0.5,1,1.5,2,3,4,5],ml:[50,100,140,150,180,200,250,260,270,280,300,350],g:[5,10,30,40,50,60,80,100,115,200,280,300,330,430,450]};
+const CHAPTERS={1:'1장 에스프레소 커피',2:'2장 흑당·크림·스페셜',3:'3장 빅포즈',4:'4장 논커피 라떼',5:'5장 프라페',6:'6장 스무디',7:'7장 밀크쉐이크·컵빙',8:'8장 주스·에이드',9:'9장 티·아이스티·매실',10:'10장 디저트형'};
+const CH_IDS=Object.keys(CHAPTERS).map(Number);
 const RECIPES=[];
 function R(name,temp,ch,steps,note){RECIPES.push({key:name+'|'+temp,name,temp,ch,note:note||'',
   steps:steps.map(s=>({i:s[0],a:s[1]===undefined?null:s[1],opt:!!s[2]}))})}
@@ -291,7 +338,7 @@ R('돌체라떼','ICE',1,[['dolceB',200],['ice'],['s2_60']]);
 R('돌체라떼','HOT',1,[['condensed',50],['steam',250],['mix'],['s2_60']]);
 R('꿀아메리카노','ICE',1,[['honey',50],['s2_45'],['mix'],['purified',200],['ice']],'꿀 + 2샷은 계량컵에서 믹스한 뒤 붓기');
 R('꿀아메리카노','HOT',1,[['honey',60],['hot',350],['mix'],['s2_45']]);
-R('달고나라떼','ICE',1,[['brownSugar',10],['sug',1],['van',1],['milk',200],['mix'],['ice'],['dalgona',30],['s2_45']]);
+R('달고나라떼','ICE',1,[['brownS',10],['sug',1],['van',1],['milk',200],['mix'],['ice'],['dalgona',30],['s2_45']]);
 R('올데이오트','ICE',1,[['lowsug',2],['oat',200],['decaf']]);
 R('흑당라떼','ICE',2,[['brownS',50],['milk',250],['ice']],'흑당은 컵 벽에 둘러 묻히기');
 R('흑당카페라떼','ICE',2,[['brownS',50],['milk',200],['ice'],['s1_30']],'흑당은 컵 벽에 둘러 묻히기');
@@ -313,6 +360,73 @@ R('빅포즈 파인애플커피','ICE',3,[['pineB',430],['ice'],['s2_45']]);
 R('빅포즈 아이스티','ICE',3,[['peachB',450],['ice']]);
 R('빅포즈 아망추','ICE',3,[['peachB',450],['ice'],['mango','80~100']]);
 R('빅포즈 아샷추','ICE',3,[['peachB',450],['ice'],['s2_45']]);
+// 4장 논커피 라떼
+R('곡물라떼','ICE',4,[['milk',250],['grainPw','55'],['sug',1.5],['mix1'],['ice']],'덜 달게: 시럽 빼고 아몬드토핑 반 스푼');
+R('곡물라떼','HOT',4,[['milk',280],['grainPw','60'],['sug',1.5],['mix'],['steamAct']],'저어서 스팀');
+R('녹차라떼','ICE',4,[['hot',50],['greenPw','45'],['sug',1],['mix'],['steamAct'],['milk',200],['ice9']],'계량컵에서 온수+파우더+시럽 믹스 → 스팀 5초');
+R('녹차라떼','HOT',4,[['milk',280],['greenPw','45'],['sug',1],['mix'],['steamAct',null,1]],'스팀피처에서 믹스');
+R('고구마라떼','ICE',4,[['sweetPotatoB',300],['ice']],'또는 고구마페이스트 45, 시럽 3P, 우유 280 → 블렌더');
+R('고구마라떼','HOT',4,[['sweetPotatoB',330],['steamAct']]);
+R('딸기라떼','ICE',4,[['strawPu','100'],['milk',200],['ice'],['whip']]);
+R('망고라떼','ICE',4,[['mangoPu','100'],['milk',200],['ice'],['whip']]);
+R('블루베리라떼','ICE',4,[['bluePu','100'],['milk',200],['ice'],['whip']]);
+R('생초콜릿라떼','ICE',4,[['chocoB',80],['milk',150],['chocoThick'],['ice9'],['chocoLump'],['chocoPw']],'초코파우더 많이');
+// 5장 프라페
+R('리얼초코 자바칩 프라페','ICE',5,[['milk',150],['javaPw','3SP'],['sug',2],['iceG','320'],['mix3'],['whip'],['choco'],['chocoChunk']]);
+R('쿠키초코 프라페','ICE',5,[['milk',150],['cookiePw','3SP'],['sug',2],['iceG','320'],['mix3'],['whip'],['choco'],['cookieCrumb','5']]);
+R('그린티 프라페','ICE',5,[['milk',150],['greenLattePw','3SP'],['sug',3],['iceG','320'],['mix3'],['whip'],['greenLattePw','1']],'설탕시럽 3P (다른 프라페는 2P)');
+R('모카자바칩 프라페','ICE',5,[['milk',100],['javaPw','3SP'],['sug',2],['iceG','320'],['s2_45'],['mix3'],['whip'],['choco'],['chocoChunk','10']],'우유 100 + 2샷(45)');
+// 6장 스무디
+R('딸기스무디','ICE',6,[['milk',140],['strawSm','160'],['iceG','320'],['mix2']]);
+R('망고스무디','ICE',6,[['milk',140],['mangoSm','160'],['iceG','320'],['mix2']]);
+R('블루베리스무디','ICE',6,[['milk',140],['blueSm','160'],['iceG','320'],['mix2']]);
+R('유자스무디','ICE',6,[['water',140],['yuzuB','100'],['lemonJ',1],['iceG','320'],['mix2'],['yuzuTop','1SP']],'마지막에 유자청 1SP');
+R('딸기요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['strawPu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
+R('망고요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['mangoPu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
+R('블루베리요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['bluePu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
+R('플레인요거트 스무디','ICE',6,[['milk',180],['yogurtPw','3.5SP'],['sug',1.5],['iceG','320'],['mix2']],'우유 180, 파우더 3.5SP');
+// 7장 밀크쉐이크·컵빙
+R('플레인 밀크쉐이크','ICE',7,[['msB',180],['msPw','2SP'],['sug',3],['iceG','320'],['mix3']],'플레인만 베이스 180');
+R('팥절미 밀크쉐이크','ICE',7,[['msB',150],['msPw','2SP'],['sug',3],['redBean','40'],['iceG','320'],['mix3'],['redBean','40'],['injeolmi','10']],'빙수팥 40 함께 갈고, 토핑 팥 40 + 인절미 10');
+R('쿠키 밀크쉐이크','ICE',7,[['msB',150],['msPw','2SP'],['sug',3],['iceG','320'],['mix3'],['lotusCrumb','1SP'],['mix'],['caramelLine'],['lotusCrumb','1SP'],['lotusCookie']],'Mix3 후 로투스크럼 넣고 섞기 → 컵 벽 카라멜 → 담기 → 토핑');
+R('캔디소다 밀크쉐이크','ICE',7,[['msB',150],['msPw','2SP'],['sug',3],['iceG','320'],['mix3'],['candyB',40],['mix']],'Mix3 후 150선까지 담고, 남은 것에 캔디소다베이스 40 섞기');
+R('커피 밀크쉐이크','ICE',7,[['s2_45'],['msB',150],['msPw','2SP'],['sug',3],['iceG','320'],['mix3']],'2샷(45)을 컵에 먼저 담기');
+R('인절미 컵빙','ICE',7,[['msB',150],['grainPw','35'],['sug',5],['iceG','320'],['mix3'],['redBean','1스푼'],['redBean','1스쿱'],['injeolmi','1스푼']],'반 담고 컵 벽에 팥 1스푼 → 담기 → 팥 1스쿱 + 인절미 1스푼');
+// 8장 주스·에이드
+R('키위주스','ICE',8,[['kiwiP'],['hot',200],['mix1'],['ice']]);
+R('오렌지당근주스','ICE',8,[['ocP'],['hot',200],['mix1'],['ice']]);
+R('딸기주스','ICE',8,[['strawFrozen','200'],['hot',200],['sugarG','20'],['mix1'],['ice']]);
+R('수박주스','ICE',8,[['wmP'],['hot',200],['sug',1],['mix1'],['strain'],['ice']]);
+R('꿀토마토주스','ICE',8,[['tomatoP'],['purified',200],['mix1'],['ice']]);
+R('바나나그레인주스','ICE',8,[['bananaP'],['purified',200],['mix1'],['ice']]);
+R('청포도에이드','ICE',8,[['grapeB',50],['cider','250'],['mix'],['ice']]);
+R('망고에이드','ICE',8,[['mangoPu','40'],['cider','250'],['mix'],['ice']]);
+R('자몽에이드','ICE',8,[['grapefruitC','40'],['cider','250'],['mix'],['ice']]);
+R('유자에이드','ICE',8,[['yuzuJam','80'],['cider','250'],['mix'],['ice']]);
+R('레몬에이드','ICE',8,[['lemonC','40'],['cider','250'],['mix'],['ice']]);
+R('블루레몬에이드','ICE',8,[['lemonC','30'],['blueCuracao',2],['cider','250'],['mix'],['ice']]);
+// 9장 티·아이스티·매실
+R('허니유자티','ICE',9,[['yuzuJam','100'],['lemonJ',1],['purified',200],['mix'],['ice']]);
+R('허니유자티','HOT',9,[['yuzuJam','100'],['lemonJ',1],['hot',260],['mix'],['steamAct']],'5초 스팀');
+R('허니자몽티','ICE',9,[['grapefruitC','30'],['grapefruitJam','80'],['lemonJ',1],['purified',200],['mix'],['ice']]);
+R('허니자몽티','HOT',9,[['grapefruitC','30'],['grapefruitJam','80'],['lemonJ',1],['hot',260],['mix'],['steamAct']],'5초 스팀');
+R('허니레몬티','ICE',9,[['lemonC','30'],['lemonJam','80'],['lemonJ',1],['purified',200],['mix'],['ice']]);
+R('허니레몬티','HOT',9,[['lemonC','30'],['lemonJam','80'],['lemonJ',1],['hot',260],['mix'],['steamAct']],'5초 스팀');
+R('자몽허니블랙티','ICE',9,[['blackTea'],['hot',150],['gfHoneyBlack','90'],['ice']],'계량컵에 티 + 온수 150 우리기 → 아이스컵에 청 90 → 음료 붓기 → 얼음');
+R('자몽허니블랙티','HOT',9,[['gfHoneyBlack','90'],['sug',1],['blackTea'],['hot',270],['steamAct']],'스팀 5초');
+R('유기농티','ICE',9,[['teaBag'],['hot',200],['ice']],'계량컵에서 2분 우리기 → 얼음 가득 아이스컵에 붓기');
+R('유기농티','HOT',9,[['teaBag'],['hot',350]]);
+R('복숭아아이스티','ICE',9,[['peachB',300],['ice']]);
+R('복숭아아이스티','HOT',9,[['peachPw','50'],['hot',350],['mix']]);
+R('아망추','ICE',9,[['peachB',300],['ice'],['mango','50']]);
+R('아샷추','ICE',9,[['peachB',300],['ice'],['s1_30']]);
+R('솔티드리치','ICE',9,[['lycheeB',330],['pinkSalt'],['ice']]);
+R('매실차','ICE',9,[['maesilB','70'],['water',250],['ice']]);
+R('매샷추','ICE',9,[['maesilB','70'],['water',200],['ice'],['s1_30']],'노트에는 "1샷"으로만 적혀 있어 1샷(30)으로 넣었습니다');
+// 10장 디저트형
+R('연유수박팥빙','ICE',10,[['wmDice','100'],['condensedB',50],['purified',100],['iceG','120'],['mix2'],['wmDice','30'],['redBean','1스쿱'],['condensedDr']],'14온스');
+R('초코베리요거젤라또','ICE',10,[['icecream',60],['berry','1SP'],['chocoRing','1SP'],['granola','1SP'],['icecream',60],['choco',10]],'큰스푼 사용. 초코소스는 커피머신 위에 있는 것');
+
 
 /* ---------- icons (sticker style) ---------- */
 const O='stroke="#1F1A2E" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"';
@@ -340,6 +454,10 @@ function icon(id){
    case 'scoop':return W(`<circle cx="24" cy="20" r="12" fill="${c}" ${O}/><path d="M14 26l10 18 10-18" fill="#F2A65A" ${O}/><circle cx="20" cy="16" r="2" fill="#FF8FB8"/><circle cx="28" cy="20" r="2" fill="#7FC8FF"/>`);
    case 'dalgona':return W(`<circle cx="24" cy="25" r="17" fill="${c}" ${O}/><path d="M24 15l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z" fill="none" stroke="#8A4F12" stroke-width="2.5" stroke-linejoin="round"/>`);
    case 'pearl':return W(`<circle cx="16" cy="30" r="7" fill="${c}" ${O}/><circle cx="30" cy="32" r="7" fill="${c}" ${O}/><circle cx="23" cy="19" r="7" fill="${c}" ${O}/><circle cx="21" cy="17" r="2" fill="#fff"/><circle cx="14" cy="28" r="2" fill="#fff"/><circle cx="28" cy="30" r="2" fill="#fff"/>`);
+   case 'blender':return W(`<path d="M14 6h20l-3 24H17z" fill="#EEF9FF" ${O}/><path d="M16 16h16l-1.5 12h-13z" fill="${c}"/><path d="M14 6h20l-3 24H17z" fill="none" ${O}/><rect x="12" y="30" width="24" height="14" rx="4" fill="#5B8CFF" ${O}/><circle cx="24" cy="37" r="3" fill="#fff" ${O} stroke-width="2"/>`);
+   case 'fruit':return W(`<circle cx="24" cy="28" r="15" fill="${c}" ${O}/><path d="M24 13c0-5 3-8 7-9" fill="none" ${O}/><path d="M24 12c-6-6-12-3-13 1 5 2 10 2 13-1z" fill="#6BCB4A" ${O} stroke-width="2.5"/><circle cx="18" cy="24" r="3" fill="#fff" opacity=".6"/>`);
+   case 'tea':return W(`<path d="M24 4v12" ${O}/><rect x="14" y="16" width="20" height="24" rx="4" fill="${c}" ${O}/><rect x="18" y="4" width="12" height="7" rx="2" fill="#FFC93C" ${O} stroke-width="2.5"/><path d="M18 26h12M18 32h8" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`);
+   case 'can':return W(`<rect x="13" y="8" width="22" height="34" rx="6" fill="${c}" ${O}/><path d="M13 16h22M13 34h22" ${O}/><circle cx="20" cy="24" r="2" fill="#7FC8FF"/><circle cx="27" cy="28" r="2.5" fill="#7FC8FF"/><circle cx="22" cy="30" r="1.5" fill="#7FC8FF"/>`);
    case 'cube':return W(`<path d="M10 18l14-8 14 8v14l-14 8-14-8z" fill="${c}" ${O}/><path d="M10 18l14 8 14-8M24 26v14" fill="none" ${O}/>`);
   }
   return W(`<circle cx="24" cy="24" r="16" fill="${c}" ${O}/>`);
@@ -378,15 +496,21 @@ const CUP={top:36,bot:226,xl0:26,xr0:174,xl1:46,xr1:154}; // inner polygon
 function cupX(y){const t=(y-CUP.top)/(CUP.bot-CUP.top);return [CUP.xl0+(CUP.xl1-CUP.xl0)*t,CUP.xr0+(CUP.xr1-CUP.xr0)*t]}
 function hexMix(list){let r=0,g=0,b=0,w=0;list.forEach(([c,h])=>{const n=parseInt(c.slice(1),16);r+=(n>>16)*h;g+=((n>>8)&255)*h;b+=(n&255)*h;w+=h});
   if(!w)return '#fff';const f=x=>Math.round(x/w).toString(16).padStart(2,'0');return '#'+f(r)+f(g)+f(b)}
-function vol(st){const g=ING[st.i];if(g.g==='shot')return g.v;if(g.g==='syrup')return g.u==='P'?(+st.a||1)*10:(+st.a||5);
+function vol(st){const g=ING[st.i];if(g.g==='shot')return g.v;if(g.g==='powder')return 12;if(g.g==='fruit'){if(g.k==='fruit'&&st.a==null)return 160;const n=parseFloat(st.a);return isNaN(n)?20:(g.u==='P'?n*10:n)}if(g.g==='syrup')return g.u==='P'?(+st.a||1)*10:(+st.a||5);
   if(g.g==='liquid')return st.a==null?150:+st.a;if(g.g==='sauce')return st.a==null?30:(parseFloat(st.a)||30);return 0}
 function buildCup(steps,temp){
   // liquid layers
-  let layers=[],tops=[],ice=0,brown=false,pearls=0,steamFx=false;
+  let layers=[],tops=[],ice=0,brown=false,pearls=0,steamFx=false,frost=false;
   steps.forEach((st,idx)=>{const g=ING[st.i];
-    if(st.i==='brownS'){brown=true;layers.push({c:g.c,v:vol(st)*0.4,idx});return}
+    if(st.i==='brownS'&&(+st.a||0)>=40){brown=true;layers.push({c:g.c,v:vol(st)*0.4,idx});return}
     if(st.i==='pearl'){pearls=Math.max(pearls,+st.a||40);return}
-    if(['syrup','sauce','liquid','shot'].includes(g.g)){layers.push({c:g.c,v:vol(st),idx,shot:g.g==='shot'});return}
+    if(st.i==='redBean'){tops.push({k:'bean',c:g.c,idx});return}
+    if(g.g==='tea'){tops.push({k:'teabag',c:g.c,idx});return}
+    if(['mix1','mix2','mix3','strain'].includes(st.i)){if(st.i!=='strain'){ice=0;frost=true}
+      if(layers.length>1){const v=layers.reduce((a,l)=>a+l.v,0);layers=[{c:hexMix(layers.map(l=>[l.c,l.v])),v,idx,mixed:1}]}
+      tops.push({k:'swirl',idx});return}
+    if(st.i==='iceG'){ice=Math.max(ice,9);layers.push({c:'#F4FBFF',v:(parseFloat(st.a)||200)*0.45,idx});tops.push({k:'iceMark',idx});return}
+    if(['syrup','sauce','liquid','shot','powder','fruit'].includes(g.g)&&!(g.g==='fruit'&&g.k==='cube')){layers.push({c:g.c,v:vol(st),idx,shot:g.g==='shot'});return}
     if(g.k==='ice'){ice=Math.max(ice,g.n2);tops.push({k:'iceMark',idx});return}
     if(st.i==='mix'||st.i==='whisk'||st.i==='steamAct'){
       if(st.i==='steamAct')steamFx=true;
@@ -411,6 +535,8 @@ function buildCup(steps,temp){
   if(brown){for(let i=0;i<9;i++){const x=34+i*16;walls+=`<path d="M${x} ${CUP.top+8} q${i%2?6:-6} 40 0 80 q${i%2?-5:5} 40 0 ${70+i%3*12}" fill="none" stroke="#4A2614" stroke-width="${4+i%3}" stroke-linecap="round" opacity=".75"/>`}}
   // pearls
   let pe='';if(pearls){for(let i=0;i<14;i++){const x=56+(i*23)%92,yy=CUP.bot-6-((i*7)%3)*9;pe+=`<circle cx="${x}" cy="${yy}" r="6" fill="#2A1A12" stroke="#1F1A2E" stroke-width="1.5"/><circle cx="${x-2}" cy="${yy-2}" r="1.6" fill="#fff" opacity=".8"/>`}}
+  // frost (blended)
+  let fr='';if(frost&&layers.length){for(let i=0;i<40;i++){const yy=surf+6+((i*37)%Math.max(10,CUP.bot-surf-10));fr+=`<circle cx="${30+(i*47)%140}" cy="${yy}" r="${1.5+(i%3)}" fill="#fff" opacity=".7"/>`}}
   // ice
   let ic='';if(ice){const lowY=Math.min(CUP.bot-20,Math.max(surf,CUP.top+40));const span=CUP.bot-30-(CUP.top+18);
     for(let i=0;i<ice;i++){const yy=CUP.top+22+((i*37)%Math.max(40,span));const [a,b]=cupX(yy);const x=a+10+((i*53)%Math.max(10,(b-a-40)));
@@ -421,6 +547,8 @@ function buildCup(steps,temp){
   const isNew=t=>t.idx===last;
   tops.forEach(t=>{
     if(t.k==='swirl'&&isNew(t)){tp+=`<path class="drop" d="M70 ${ty-30} q30 -20 60 0 q-30 20 -60 0" fill="none" stroke="#FF6A4D" stroke-width="4" stroke-linecap="round"/>`}
+    if(t.k==='teabag'){tp+=`<g class="${isNew(t)?'drop':''}"><path d="M150 ${CUP.top-6} q10 20 -8 60" fill="none" stroke="#1F1A2E" stroke-width="2"/><rect x="128" y="${CUP.top+50}" width="26" height="30" rx="4" fill="${t.c}" stroke="#1F1A2E" stroke-width="2.5"/><rect x="160" y="${CUP.top-20}" width="16" height="12" rx="2" fill="#FFC93C" stroke="#1F1A2E" stroke-width="2.5"/></g>`}
+    if(t.k==='fruit'||t.k==='jar'||t.k==='can'||t.k==='pump'){}
     if(t.k==='squeeze'){tp+=`<path d="M40 ${CUP.top+20} q60 30 120 0" fill="none" stroke="${t.c}" stroke-width="6" stroke-linecap="round" opacity=".85"/>`}
     if(t.k==='cream'){const [a,b]=cupX(Math.max(ty,CUP.top+4));
       tp+=`<g class="${isNew(t)?'drop':''}"><path d="M${a-2} ${ty} c0-22 18-26 26-24 c4-16 18-24 26-28 c8 4 22 12 26 28 c8-2 26 2 26 24z" fill="${t.c}" stroke="#1F1A2E" stroke-width="3" stroke-linejoin="round"/></g>`;ty-=34}
@@ -428,7 +556,8 @@ function buildCup(steps,temp){
     if(t.k==='drizzle'){tp+=`<path class="${isNew(t)?'drop':''}" d="M52 ${ty-4} l12 -10 12 10 12 -10 12 10 12 -10 12 10 12 -10" fill="none" stroke="${t.c}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`}
     if(t.k==='powder'){let d='';for(let i=0;i<16;i++){d+=`<circle cx="${62+(i*29)%76}" cy="${ty-6-(i*13)%18}" r="2.4" fill="${t.c}"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
     if(t.k==='dalgona'){let d='';for(let i=0;i<6;i++){d+=`<path d="M${60+i*14} ${ty-4-(i%2)*8} l8 -4 6 6 -6 6 -8 -2z" fill="#E09B2D" stroke="#1F1A2E" stroke-width="2"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
-    if(t.k==='cube'){let d='';for(let i=0;i<5;i++){d+=`<rect x="${60+i*16}" y="${ty-12-(i%2)*8}" width="14" height="14" rx="3" fill="#FFC23D" stroke="#1F1A2E" stroke-width="2"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
+    if(t.k==='bean'){let d='';for(let i=0;i<7;i++){d+=`<ellipse cx="${66+(i*11)}" cy="${ty-6-(i%2)*7}" rx="7" ry="5" fill="${t.c}" stroke="#1F1A2E" stroke-width="1.8"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`;ty-=6}
+    if(t.k==='cube'){let d='';for(let i=0;i<5;i++){d+=`<rect x="${60+i*16}" y="${ty-12-(i%2)*8}" width="14" height="14" rx="3" fill="${t.c||'#FFC23D'}" stroke="#1F1A2E" stroke-width="2"/>`}tp+=`<g class="${isNew(t)?'drop':''}">${d}</g>`}
   });
   const hot=temp==='HOT';
   const steamPaths=(hot||steamFx)&&layers.length?`<g class="steam" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><path d="M70 22c-8-10 8-14 0-24"/><path d="M100 18c-8-10 8-14 0-24"/><path d="M130 22c-8-10 8-14 0-24"/></g>`:'';
@@ -438,7 +567,7 @@ function buildCup(steps,temp){
     <ellipse cx="100" cy="236" rx="70" ry="6" fill="#1F1A2E" opacity=".18"/>
     ${steamPaths}
     <path d="M${CUP.xl0} ${CUP.top} L${CUP.xr0} ${CUP.top} L${CUP.xr1} ${CUP.bot} Q100 ${CUP.bot+6} ${CUP.xl1} ${CUP.bot}z" fill="${hot?'#FFF6EA':'#EEF9FF'}"/>
-    <g clip-path="url(#cc)">${liq}${walls}${pe}${ic}</g>
+    <g clip-path="url(#cc)">${liq}${fr}${walls}${pe}${ic}</g>
     <path d="M${CUP.xl0+12} ${CUP.top+16} L${CUP.xl1+8} ${CUP.bot-16}" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".7"/>
     <path d="M${CUP.xl0} ${CUP.top} L${CUP.xr0} ${CUP.top} L${CUP.xr1} ${CUP.bot} Q100 ${CUP.bot+6} ${CUP.xl1} ${CUP.bot}z" fill="none" stroke="#1F1A2E" stroke-width="4" stroke-linejoin="round"/>
     <rect x="${CUP.xl0-6}" y="${CUP.top-8}" width="${CUP.xr0-CUP.xl0+12}" height="10" rx="5" fill="#fff" stroke="#1F1A2E" stroke-width="3.5"/>
@@ -459,7 +588,7 @@ const S={mode:'practice',stage:String(store.stage||'1'),cur:null,cup:[],hint:fal
 const RUSH_SEC=90;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function fmt(st){const g=ING[st.i];if(st.a==null||st.a==='')return g.n;return g.n+' '+st.a+(g.u==='P'?'P':'')}
+function fmt(st){const g=ING[st.i];if(st.a==null||st.a==='')return g.n;return g.n+' '+st.a+(g.u==='P'&&!isNaN(+st.a)?'P':'')}
 const gcol=g=>GROUPS.find(x=>x.id===g).c;
 function pool(){return S.stage==='all'?RECIPES:RECIPES.filter(r=>String(r.ch)===S.stage)}
 function pickNext(){const p=pool();let tot=0;
@@ -489,7 +618,7 @@ function grade(R,U){
 
 /* ---------- render ---------- */
 function renderStageSel(){const sel=$('stage');sel.innerHTML='';
-  [['1',CHAPTERS[1]],['2',CHAPTERS[2]],['3',CHAPTERS[3]],['all','전체 (1~3장)']].forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;sel.appendChild(o)});
+  [...CH_IDS.map(c=>[String(c),CHAPTERS[c]]),['all','전체 (1~10장)']].forEach(([v,n])=>{const o=document.createElement('option');o.value=v;o.textContent=n;sel.appendChild(o)});
   sel.value=S.stage}
 function mastery(){const p=pool();return Math.round(100*p.filter(r=>card(r.key).box>=3).length/p.length)}
 function renderHud(){
@@ -539,7 +668,7 @@ function closeSheet(){if(!sheetOpen)return;sheetOpen=false;$('layer').innerHTML=
 function askAmount(id){
   const g=ING[id];const opts=g.opts?g.opts.slice():UNIT_OPTS[g.u].map(String);
   openSheet(`<h2>${icon(id)}${esc(g.n)}</h2><p class="sub">${g.d?esc(g.d)+' · ':''}${g.u==='P'?'몇 펌프?':g.u==='ml'?'몇 ml?':'얼마나?'}</p>
-    <div class="amounts">${opts.map(o=>`<button class="amt press" type="button" data-amt="${esc(o)}">${esc(o)}${g.u==='P'?'P':''}</button>`).join('')}
+    <div class="amounts">${opts.map(o=>`<button class="amt press" type="button" data-amt="${esc(o)}">${esc(o)}${g.u==='P'&&!isNaN(+o)?'P':''}</button>`).join('')}
     <button class="amt skip press" type="button" data-amt="">양 생략</button></div>
     <div class="foot"><button class="btn press" type="button" data-close>취소</button></div>`,e=>{
       const b=e.target.closest('[data-amt],[data-close]');if(!b)return;
@@ -591,7 +720,7 @@ function openStats(){
   const all=RECIPES.map(r=>({r,c:card(r.key)}));const seen=all.filter(x=>x.c.seen>0);
   const tot=seen.reduce((a,x)=>a+x.c.seen,0),perf=seen.reduce((a,x)=>a+x.c.perfect,0);
   const worst=seen.filter(x=>x.c.miss>0).sort((a,b)=>b.c.miss-a.c.miss||a.c.box-b.c.box).slice(0,10);
-  const chBars=[1,2,3].map(ch=>{const p=RECIPES.filter(r=>r.ch===ch);const m=p.filter(r=>card(r.key).box>=3).length;
+  const chBars=CH_IDS.map(ch=>{const p=RECIPES.filter(r=>r.ch===ch);const m=p.filter(r=>card(r.key).box>=3).length;
     return `<div class="brow"><div class="nm">${esc(CHAPTERS[ch])} <span class="rc">${m}/${p.length} 익힘</span></div><div class="meter"><i style="width:${Math.round(100*m/p.length)}%"></i></div></div>`}).join('');
   openSheet(`<h2>📝 오답노트</h2><p class="sub">숙련 3/5 이상이면 익힌 메뉴예요. 틀리면 1로 돌아가요.</p>
     <div class="stats"><div class="stat"><b>${tot}</b><span>만든 잔</span></div><div class="stat"><b>${tot?Math.round(100*perf/tot):0}%</b><span>완벽률</span></div><div class="stat"><b>${store.best||0}</b><span>러시 최고점</span></div></div>
