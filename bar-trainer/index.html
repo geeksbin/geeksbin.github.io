@@ -254,7 +254,7 @@ const ING={
  mixB:{n:'믹스커피베이스',g:'sauce',u:'g',k:'jar',c:'#C49466'},peachB:{n:'복숭아티베이스',g:'sauce',u:'g',k:'jar',c:'#F7A27C'},
  vanPowder:{n:'바닐라파우더',g:'powder',u:'g',k:'powder',c:'#F6E9C2'},
  milk:{n:'우유',g:'liquid',u:'ml',k:'carton',c:'#FFFFFF'},steam:{n:'스팀우유',g:'liquid',u:'ml',k:'pitcher',c:'#FBF5EA'},
- oat:{n:'오트우유',g:'liquid',u:'ml',k:'carton',c:'#EEDDBB'},water:{n:'물',g:'liquid',u:'ml',k:'drop',c:'#BFE6FA'},
+ oat:{n:'오트우유',g:'liquid',u:'ml',k:'carton',c:'#EEDDBB'},
  hot:{n:'온수',g:'liquid',u:'ml',k:'kettle',c:'#CBEAF8'},purified:{n:'정수',g:'liquid',u:'ml',k:'drop',c:'#C6E8F9'},
  s1_30:{n:'1샷(30)',g:'shot',k:'shot',c:'#4B2312',v:30},s2_45:{n:'2샷(45)',g:'shot',k:'shot2',c:'#4B2312',v:45},
  s2_60:{n:'2샷(60)',g:'shot',k:'shot2',c:'#4B2312',v:60},s4_45:{n:'4샷(45×2)',g:'shot',k:'shot4',c:'#4B2312',v:90},
@@ -321,7 +321,7 @@ const CH_IDS=Object.keys(CHAPTERS).map(Number);
 const RECIPES=[];
 function R(name,temp,ch,steps,note){RECIPES.push({key:name+'|'+temp,name,temp,ch,note:note||'',
   steps:steps.map(s=>({i:s[0],a:s[1]===undefined?null:s[1],opt:!!s[2]}))})}
-R('아메리카노','ICE',1,[['water',200],['ice'],['s2_45']]);
+R('아메리카노','ICE',1,[['purified',200],['ice'],['s2_45']]);
 R('아메리카노','HOT',1,[['hot',350],['s2_60']]);
 R('카페라떼','ICE',1,[['milk',200],['ice'],['s2_60']]);
 R('카페라떼','HOT',1,[['s2_60'],['steam',270]]);
@@ -344,7 +344,7 @@ R('흑당라떼','ICE',2,[['brownS',50],['milk',250],['ice']],'흑당은 컵 벽
 R('흑당카페라떼','ICE',2,[['brownS',50],['milk',200],['ice'],['s1_30']],'흑당은 컵 벽에 둘러 묻히기');
 R('흑당버블라떼','ICE',2,[['brownS',50],['pearl',40],['milk',250],['ice']],'흑당 둘러 묻히기 → 펄');
 R('흑당버블카페라떼','ICE',2,[['brownS',50],['pearl',40],['milk',200],['ice'],['s1_30']],'흑당 둘러 묻히기 → 펄');
-R('배러댄아인슈페너','ICE',2,[['s2_45'],['water',100],['van',0.5],['sug',1],['ice9'],['einCream'],['chocoPw']]);
+R('배러댄아인슈페너','ICE',2,[['s2_45'],['purified',100],['van',0.5],['sug',1],['ice9'],['einCream'],['chocoPw']]);
 R('아인슈페너라떼','ICE',2,[['sug',1],['van',0.5],['milk',150],['s2_45'],['ice9'],['einCream'],['chocoPw']],'노트에는 "2샷"으로만 적혀 있어 2샷(45)로 넣었습니다');
 R('바닐라크림라떼','ICE',2,[['vanConc',5],['vanPowder',10],['s1_30'],['whisk'],['milk',100],['chocoLine'],['ice'],['vanCream',50],['chocoPw']],'14온스. 초코파우더는 가운데 톡톡');
 R('너티크림라떼','ICE',2,[['nuttyB',115],['ice'],['s1_30'],['nuttyCream',50],['chocoPw']],'14온스. 초코파우더는 가운데 톡톡');
@@ -352,7 +352,7 @@ R('아이스크림라떼','ICE',2,[['milk',100],['ice'],['s2_45'],['icecream',10
 R('에어리아메리카노','ICE',2,[['iceFull'],['s2_45'],['steamAct']],'스팀 중간중간 얼음 2번 정도 넣기. 넘치기 직전까지, 거품 많이');
 R('파인애플커피','ICE',2,[['pineB',280],['ice'],['s1_30']]);
 R('믹스커피','ICE',2,[['mixB',280],['ice']]);
-R('빅포즈 아메리카노','ICE',3,[['water',300],['ice'],['s4_45']]);
+R('빅포즈 아메리카노','ICE',3,[['purified',300],['ice'],['s4_45']]);
 R('빅포즈 카페라떼','ICE',3,[['milk',300],['ice'],['s4_60']]);
 R('빅포즈 바닐라라떼','ICE',3,[['van',4],['sug',2],['milk',250],['ice'],['s4_60']]);
 R('빅포즈 헤이즐넛라떼','ICE',3,[['haz',4],['sug',2],['milk',250],['ice'],['s4_60']]);
@@ -380,7 +380,7 @@ R('모카자바칩 프라페','ICE',5,[['milk',100],['javaPw','3SP'],['sug',2],[
 R('딸기스무디','ICE',6,[['milk',140],['strawSm','160'],['iceG','320'],['mix2']]);
 R('망고스무디','ICE',6,[['milk',140],['mangoSm','160'],['iceG','320'],['mix2']]);
 R('블루베리스무디','ICE',6,[['milk',140],['blueSm','160'],['iceG','320'],['mix2']]);
-R('유자스무디','ICE',6,[['water',140],['yuzuB','100'],['lemonJ',1],['iceG','320'],['mix2'],['yuzuTop','1SP']],'마지막에 유자청 1SP');
+R('유자스무디','ICE',6,[['purified',140],['yuzuB','100'],['lemonJ',1],['iceG','320'],['mix2'],['yuzuTop','1SP']],'마지막에 유자청 1SP');
 R('딸기요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['strawPu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
 R('망고요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['mangoPu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
 R('블루베리요거트 스무디','ICE',6,[['milk',150],['yogurtPw','3SP'],['sug',1.5],['iceG','320'],['mix2'],['bluePu','40']],'퓨레 40은 컵에 묻힌 뒤 담기');
@@ -421,8 +421,8 @@ R('복숭아아이스티','HOT',9,[['peachPw','50'],['hot',350],['mix']]);
 R('아망추','ICE',9,[['peachB',300],['ice'],['mango','50']]);
 R('아샷추','ICE',9,[['peachB',300],['ice'],['s1_30']]);
 R('솔티드리치','ICE',9,[['lycheeB',330],['pinkSalt'],['ice']]);
-R('매실차','ICE',9,[['maesilB','70'],['water',250],['ice']]);
-R('매샷추','ICE',9,[['maesilB','70'],['water',200],['ice'],['s1_30']],'노트에는 "1샷"으로만 적혀 있어 1샷(30)으로 넣었습니다');
+R('매실차','ICE',9,[['maesilB','70'],['purified',250],['ice']]);
+R('매샷추','ICE',9,[['maesilB','70'],['purified',200],['ice'],['s1_30']],'노트에는 "1샷"으로만 적혀 있어 1샷(30)으로 넣었습니다');
 // 10장 디저트형
 R('연유수박팥빙','ICE',10,[['wmDice','100'],['condensedB',50],['purified',100],['iceG','120'],['mix2'],['wmDice','30'],['redBean','1스쿱'],['condensedDr']],'14온스');
 R('초코베리요거젤라또','ICE',10,[['icecream',60],['berry','1SP'],['chocoRing','1SP'],['granola','1SP'],['icecream',60],['choco',10]],'큰스푼 사용. 초코소스는 커피머신 위에 있는 것');
